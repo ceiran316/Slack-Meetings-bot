@@ -11,10 +11,8 @@
   },
   "main": "index.js",
   "scripts": {
-    "prestart": "concurrently \"nodemon --inspect ./index.js\"",
     "test": "npm test",
-    "start": "node index.js",
-    "dev": "concurrently \"node ./dev/ngrok.js\" \"nodemon --inspect ./index.js\""
+    "start": "node index.js"
   },
   "dependencies": {
     "@slack/client": "4.8.0",
