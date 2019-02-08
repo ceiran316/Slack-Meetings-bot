@@ -14,7 +14,7 @@ const { verifySignatureMiddleware } = require('./src/middleware');
 
 const { SIGNING_SECRET } = process.env;
 
-const PORT = 3000;
+const PORT = 80;
 
 const slackEvents = createEventAdapter(SIGNING_SECRET, { includeBody: true });
 
