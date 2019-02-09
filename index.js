@@ -2,7 +2,7 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const axios = require('axios');
+// const axios = require('axios');
 const SlackBot = require('slackbots'); // import slackbot library
 
 const { createEventAdapter } = require('@slack/events-api');
