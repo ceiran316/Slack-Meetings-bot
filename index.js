@@ -10,9 +10,7 @@ const { errorEvent, linkEvent, messageEvent } = require('./src/events');
 const { actionsHandler, optionsHandler, commandsHandler } = require('./src/handlers');
 const { verifySignatureMiddleware } = require('./src/middleware');
 
-const { SIGNING_SECRET } = process.env;
-
-const PORT = 80;
+const { PORT, SIGNING_SECRET } = process.env;
 
 const slackEvents = createEventAdapter(SIGNING_SECRET, { includeBody: true });
 
