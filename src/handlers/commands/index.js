@@ -130,7 +130,7 @@ const commands = (req, res) => {
             web.dialog.open({
                 trigger_id,
                 dialog: {
-                    callback_id: 'new-meeting',
+                    callback_id: 'dialog_my_job',
                     title: 'My Job Dialog',
                     submit_label: 'Send',
                     notify_on_cancel: false,
@@ -180,12 +180,7 @@ const commands = (req, res) => {
                         value: 'yes',
                         style: 'primary',
                         text: 'Yes',
-                        type: 'button',
-                        confirm: {
-                            title: 'Create meeting?',
-                            ok_text: 'Yes, im sure',
-                            dismiss_text: 'Cancel'
-                        }
+                        type: 'button'                      
                     }, {
                         name: 'decision',
                         value: 'no',
@@ -327,7 +322,7 @@ const commands = (req, res) => {
             break;
         }
         default: {
-            res.send(`You can use the slash command followed by *new*, *edit*, *remove*, *invitees*, *details*, *dialog*, *select*, *footer*, or *menu*`)
+            res.send(`You can use the slash command followed by *image*, *fields*, *private*, *text*, *buttons*, *dialog*, *select*, *footer*, or *menu*`)
         }
     }
 }

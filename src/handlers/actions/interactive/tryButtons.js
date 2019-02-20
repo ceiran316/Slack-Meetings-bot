@@ -10,6 +10,7 @@ const buttonsTest = (req, res) => {
     const {
         user: { id: userId },
         actions: [action],
+        //dialogSubmission: [submission],
         channel: { id: channel },
         message_ts: ts,
       trigger_id
@@ -24,12 +25,13 @@ const buttonsTest = (req, res) => {
             text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`
         }]
     });
-  
-            /*  web.dialog.open({
+  console.log("action: ", action.value);
+    if (action.value === 'yes'){
+              web.dialog.open({
                 trigger_id,
                 dialog: {
                     callback_id: 'dialog_my_job',
-                    title: 'My Job Dialog',
+                    title: 'Create Meeting',
                     submit_label: 'Send',
                     notify_on_cancel: false,
                     state: 'Limo',
@@ -37,21 +39,25 @@ const buttonsTest = (req, res) => {
                     elements: [{
                         label: 'Meeting Name',
                         name: 'name',
-                        type: 'text'
+                        type: 'text',
+                        hint: 'Project Briefing/Demo'
                     }, {
                         label: 'Location',
                         name: 'location',
                         subtype: 'email',
-                        type: 'text'
+                        type: 'text',
+                        hint: 'Boardroom/Training room'
                     }, {
-                        label: 'Date',
+                        label: 'Date & Time',
                         name: 'date',
-                        type: 'select',
-                        data_source: 'external'
+                        placeholder: 'DD/MM hh:mm - hh:mm',
+                        type: 'text',
+                        hint: '31/01 9:00pm - 10:00pm'
                     }, {
-                        label: 'Time',
-                        name: 'time',
-                        type: 'textarea'
+                        label: 'Details',
+                        name: 'description',
+                        type: 'textarea',
+                        hint: 'Meeting notes, Pizza/cake after'
                     }, {
                         label: 'Invite',
                         name: 'manager',
@@ -59,7 +65,19 @@ const buttonsTest = (req, res) => {
                         data_source: 'users'
                     }]
                 }
-            });*/
+                
+            });
+      attachments: [{
+            title: 'Meeting Feeback',
+            //text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(submission)}`
+        }]
+      //console.log("meeting name: ", submission.name);
+      //console.log("location: ", submission.location);
+      //console.log("date: ", submission.date[0]);
+      //console.log("time: ", submission.date[1]);
+      //console.log("details: ", submission.description);
+      //console.log("manager: ", submission.manager);
+    }
 }
 
 module.exports = buttonsTest;
