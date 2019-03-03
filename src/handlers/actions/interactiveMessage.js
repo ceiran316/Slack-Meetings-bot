@@ -15,10 +15,6 @@ const interactiveMessage = (req, res) => {
             tryButtons(req, res);
             break;
         }
-        case 'snooze_selection': {
-            snoozeSelection(req, res);
-            break;
-        }
         default:
     }
 }

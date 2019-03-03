@@ -8,11 +8,7 @@ const dialogSubmission = (req, res) => {
     const payload = JSON.parse(body.payload);
     const { callback_id } = payload;
   
-
-
     console.log('TCL: dialogSubmission -> callback_id', callback_id);
-
-    
 
     switch(callback_id) {
       case 'meeting': {
@@ -28,7 +24,6 @@ const dialogSubmission = (req, res) => {
           break;
         }*/
         web.chat.postEphemeral({ user, channel, text: JSON.stringify(submission) }).catch(console.error);
-        
         
         console.log("meeting name: ", submission.name);
         console.log("location: ", submission.room);

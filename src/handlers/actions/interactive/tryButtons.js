@@ -79,16 +79,6 @@ const buttonsTest = (req, res) => {
                 }
                 
             });
-      attachments: [{
-            title: 'Meeting Feeback',
-            //text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(submission)}`
-        }]
-      //console.log("meeting name: ", submission.name);
-      //console.log("location: ", submission.location);
-      //console.log("date: ", submission.date[0]);
-      //console.log("time: ", submission.date[1]);
-      //console.log("details: ", submission.description);
-      //console.log("manager: ", submission.manager);
     }
 }
 
