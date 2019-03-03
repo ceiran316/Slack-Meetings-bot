@@ -72,12 +72,12 @@ const commands = (req, res) => {
                         value: 'yes',
                         style: 'primary',
                         text: 'Yes',
-                        type: 'button',
+                        type: 'button'/*,
                         confirm: {
                             title: 'Update meeting?',
                             ok_text: 'Yes, im sure',
                             dismiss_text: 'Cancel'
-                        }
+                        */
                       
                     }, {
                         name: 'decision',
@@ -104,12 +104,12 @@ const commands = (req, res) => {
                         value: 'yes',
                         style: 'primary',
                         text: 'Yes',
-                        type: 'button',
+                        type: 'button'/*,
                         confirm: {
                             title: 'Delete meeting?',
                             ok_text: 'Yes, im sure',
                             dismiss_text: 'Cancel'
-                        }
+                        }*/
                       
                     }, {
                         name: 'decision',
@@ -120,6 +120,36 @@ const commands = (req, res) => {
                     }]
                 }]
             }).catch(console.error);
+            res.send();
+            break;
+        }
+        case 'select': {
+            web.chat.postEphemeral({
+                user,
+                channel,
+                response_type: 'in_channel',
+                attachments: [{
+                    text: 'Snooze *Notifications* for how long?',
+                    color: '#3AA3E3',
+                    attachment_type: 'default',
+                    callback_id: 'snooze_selection',
+                    actions: [{
+                        name: 'snooze_until',
+                        text: 'Snooze until...',
+                        type: 'select',
+                        options: [{
+                            text: 'Tomorrow',
+                            value: 'Tomorrow'
+                        }, {
+                            text: 'Next Week',
+                            value: 'Next_Week'
+                        }, {
+                            text: 'Next Month',
+                            value: 'Next_Month'
+                        }]
+                    }]
+                }]
+              });
             res.send();
             break;
         }

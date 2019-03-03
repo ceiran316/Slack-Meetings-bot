@@ -19,7 +19,7 @@ const buttonsTest = (req, res) => {
     res.send({
         channel,
         ts,
-        text: 'Try out these buttons',
+        text: 'Meeting being created...',
         attachments: [{
             title: 'Feeback',
             text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`
@@ -48,13 +48,19 @@ const buttonsTest = (req, res) => {
                         data_source: 'external',
                         hint: 'Choose meeting location'
                     }, {
-                        label: 'Date',
-                        name: 'date',
-                        placeholder: 'DD/MM',
+                        label: 'Day',
+                        name: 'day',
+                        placeholder: 'DD',
                         type: 'text',
-                        hint: '31/01'
+                        hint: '01 or 23'
+                    },{
+                        label: 'Month',
+                        name: 'month',
+                        placeholder: 'MM',
+                        type: 'text',
+                        hint: '01 or JAN'
                     }, {
-                        label: 'Strat Time',
+                        label: 'Start Time',
                         name: 'start',
                         placeholder: 'hh:mm',
                         type: 'text',

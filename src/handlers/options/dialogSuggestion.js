@@ -21,22 +21,19 @@ const dialogSuggestions = (req, res) => {
               label: 'Available',
               options: [{
               label: 'Demo Room',
-              value: 'demo'
+              value: 'Demo Room'
             },{
-            label: 'Boardroom',
-              value: 'board'
+            label: 'Board Room',
+              value: 'Board Room'
             },{
             label: 'Training Room',
-              value: 'training'
-            },{
-            label: 'Panic Room',
-              value: 'panic'
+              value: 'Rraining Room'
             },{
             label: 'Seminar Room',
-              value: 'seminar'
+              value: 'Seminar Room'
             },{
             label: 'Conference Room',
-              value: 'conference'
+              value: 'Conference Room'
             }]
           }], value);
         return res.send({ option_groups });
