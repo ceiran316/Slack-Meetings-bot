@@ -30,7 +30,7 @@ const buttonsTest = (req, res) => {
               web.dialog.open({
                 trigger_id,
                 dialog: {
-                    callback_id: 'dialog_my_job',
+                    callback_id: 'meeting',
                     title: 'Create Meeting',
                     submit_label: 'Send',
                     notify_on_cancel: false,
@@ -43,27 +43,39 @@ const buttonsTest = (req, res) => {
                         hint: 'Project Briefing/Demo'
                     }, {
                         label: 'Location',
-                        name: 'location',
-                        subtype: 'email',
-                        type: 'text',
-                        hint: 'Boardroom/Training room'
+                        name: 'room',
+                        type: 'select',
+                        data_source: 'external',
+                        hint: 'Choose meeting location'
                     }, {
-                        label: 'Date & Time',
+                        label: 'Date',
                         name: 'date',
-                        placeholder: 'DD/MM hh:mm - hh:mm',
+                        placeholder: 'DD/MM',
                         type: 'text',
-                        hint: '31/01 9:00pm - 10:00pm'
+                        hint: '31/01'
                     }, {
+                        label: 'Strat Time',
+                        name: 'start',
+                        placeholder: 'hh:mm',
+                        type: 'text',
+                        hint: '09:00 / 13:00 (24hr)'
+                    },{
+                        label: 'Meeting Duration',
+                        name: 'duration',
+                        placeholder: 'Choose meeting duration',
+                        type: 'select',
+                        data_source: 'external'
+                    },{
                         label: 'Details',
                         name: 'description',
                         type: 'textarea',
                         hint: 'Meeting notes, Pizza/cake after'
-                    }, {
+                    }/*, {
                         label: 'Invite',
                         name: 'manager',
                         type: 'select',
                         data_source: 'users'
-                    }]
+                    }*/]
                 }
                 
             });

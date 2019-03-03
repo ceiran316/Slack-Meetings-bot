@@ -14,20 +14,54 @@ const dialogSuggestions = (req, res) => {
   const { callback_id } = payload;
 
   switch(callback_id) {
-    case 'dialog_my_job': {
+    case 'meeting': {
       const { name, value = '' } = payload;
-      if (_.isEqual(name, 'role')) {
+      if (_.isEqual(name, 'room')) {
         const option_groups = filterOptions([{
-            label: 'A',
-            options: [{
-              label: 'Accountant',
-              value: 'accountant'
+              label: 'Available',
+              options: [{
+              label: 'Demo Room',
+              value: 'demo'
+            },{
+            label: 'Boardroom',
+              value: 'board'
+            },{
+            label: 'Training Room',
+              value: 'training'
+            },{
+            label: 'Panic Room',
+              value: 'panic'
+            },{
+            label: 'Seminar Room',
+              value: 'seminar'
+            },{
+            label: 'Conference Room',
+              value: 'conference'
             }]
-          }, {
-            label: 'B',
-            options: [{
-              label: 'Barista',
-              value: 'barista'
+          }], value);
+        return res.send({ option_groups });
+      }
+      else if (_.isEqual(name, 'duration')) {
+        const option_groups = filterOptions([{
+              label: 'Length of meeting',
+              options: [{
+              label: '15 mins',
+              value: '15'
+            },{
+            label: '30 mins',
+              value: '30'
+            },{
+            label: '45 mins',
+              value: '45'
+            },{
+            label: '60 mins',
+              value: '60'
+            },{
+            label: '90 mins',
+              value: '90'
+            },{
+            label: '120 mins',
+              value: '120'
             }]
           }], value);
         return res.send({ option_groups });
