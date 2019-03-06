@@ -34,7 +34,8 @@
     "q": "1.5.1",
     "query-string": "6.2.0",
     "request": "2.88.0",
-    "underscore": "^1.9.1"
+    "underscore": "^1.9.1",
+    "cloudant": "1.10.0-NOTICE"
   },
   "engines": {
     "node": "10",

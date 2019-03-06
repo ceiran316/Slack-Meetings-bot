@@ -2,6 +2,13 @@ const SLACK = 'https://slack.com';
 const SLACK_API = `${SLACK}/api`;
 
 const constants = {
+    db: {
+        NAME: 'meetings',
+        DOC: 'allMeetings',
+        keys: {
+            
+        }
+    },
     server: {
         OAUTH_ACCESS: `${SLACK_API}/oauth.access`,
         OAUTH_AUTHORIZE: `${SLACK}/oauth/authorize`,
