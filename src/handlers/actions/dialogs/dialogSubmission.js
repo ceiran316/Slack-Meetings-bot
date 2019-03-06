@@ -23,7 +23,7 @@ const dialogSubmission = (req, res) => {
           });
           break;
         }*/
-        web.chat.postEphemeral({ user, channel, text: JSON.stringify(submission) }).catch(console.error);
+        //web.chat.postEphemeral({ user, channel, text: JSON.stringify(submission) }).catch(console.error);
                
         console.log("meeting name: ", submission.name);
         console.log("location: ", submission.room);
@@ -94,13 +94,13 @@ const dialogSubmission = (req, res) => {
         
         var ordInd;
         
-        if (day[1] == 1){
+        if (day[1] == 1 && day[0] == 0 || day[0] == 2 || day[0] == 3){
           ordInd = 'st';
         }
-        else if (day[1] == 2){
+        else if (day[1] == 2 && day[0] == 0 || day[0] == 2){
           ordInd = 'nd';
         }
-        else if (day[1] == 3){
+        else if (day[1] == 3 && day[0] == 0 || day[0] == 2){
           ordInd = 'rd';
         }
         else {

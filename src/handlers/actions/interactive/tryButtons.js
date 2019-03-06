@@ -19,11 +19,11 @@ const buttonsTest = (req, res) => {
     res.send({
         channel,
         ts,
-        text: 'Meeting being created...',
+        text: 'Meeting being created...'/*,
         attachments: [{
             title: 'Feeback',
             text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`
-        }]
+        }]*/
     });
   console.log("action: ", action.value);
     if (action.value === 'yes'){
