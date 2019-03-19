@@ -52,7 +52,7 @@ const buttonsTest = (req, res) => {
                         name: 'day',
                         placeholder: 'DD',
                         type: 'text',
-                        hint: '01 or 23'
+                        hint: ''
                     },{
                         label: 'Month',
                         name: 'month',
@@ -74,6 +74,7 @@ const buttonsTest = (req, res) => {
                     },{
                         label: 'Details',
                         name: 'description',
+                        optional: true,
                         type: 'textarea',
                         hint: 'Meeting notes, Pizza/cake after'
                     }/*, {

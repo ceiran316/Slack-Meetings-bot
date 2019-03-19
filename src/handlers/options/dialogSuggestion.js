@@ -27,7 +27,7 @@ const dialogSuggestions = (req, res) => {
               value: 'Board Room'
             },{
             label: 'Training Room',
-              value: 'Rraining Room'
+              value: 'Training Room'
             },{
             label: 'Seminar Room',
               value: 'Seminar Room'

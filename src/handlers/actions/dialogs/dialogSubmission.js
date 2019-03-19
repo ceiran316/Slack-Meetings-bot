@@ -129,14 +129,12 @@ const dialogSubmission = (req, res) => {
         
         web.chat.postMessage({
                 channel,
-                    text: '*Meeting Details*' +
-                     '\nSubject:\t'+ mName +
-                     '\nLocation:\t'+ location +
-                     '\nDate:\t'+ day + ordInd +' ' + monthAlpha + " 2019" +
-                     '\nTime:\t' + hourF + hourL + ":" + minuteF + minuteL + 
-                     '\nDuration:\t' + duration + 'mins' +
-                     '\nDetails:\t' + details
-                
+                    text: '*'+ mName +'*' +
+                    '\n:round_pushpin:\t'+ location +
+                    '\n:spiral_calendar_pad:\t'+ day + ordInd +' ' + monthAlpha + " 2019" +
+                    '\n:clock3:\t' + hourF + hourL + ":" + minuteF + minuteL + 
+                    '\n:hourglass_flowing_sand:\t' + duration + 'mins' +
+                    '\n:memo:\t' + details
             });       
         res.send();
         break;
