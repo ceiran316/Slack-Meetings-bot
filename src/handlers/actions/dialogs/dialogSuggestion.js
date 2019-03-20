@@ -10,22 +10,22 @@ const dialogSuggestion = (req, res) => {
     res.send();
 
     switch(callback_id) {
-        case 'meeting': {
-          const { name } = payload;
-          console.log('NAME', name);
-          if (location === 'Demo Room') {
-            return res.send({
-              errors: [{
-                name: 'room',
-                error: "Room not available"
-              }]
+        // case 'meeting': {
+        //   const { name } = payload;
+        //   console.log('NAME', name);
+        //   if (location === 'Demo Room') {
+        //     return res.send({
+        //       errors: [{
+        //         name: 'room',
+        //         error: "Room not available"
+        //       }]
 
-            });
-            break;
-          }
+        //     });
+        //     break;
+        //   }
         
-        res.send();
-        }
+        // res.send();
+        // }
       default:
     }
   };

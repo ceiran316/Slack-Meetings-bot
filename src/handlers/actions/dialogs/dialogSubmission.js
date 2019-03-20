@@ -67,6 +67,10 @@ const dialogSubmission = (req, res) => {
           });
         }).catch(err => {
           console.log('DB ERROR', err);
+          web.chat.postMessage({
+            channel,
+            text: err
+          });
         })
 
        
