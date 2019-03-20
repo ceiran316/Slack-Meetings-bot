@@ -123,36 +123,6 @@ const commands = (req, res) => {
             res.send();
             break;
         }
-        case 'select': {
-            web.chat.postEphemeral({
-                user,
-                channel,
-                response_type: 'in_channel',
-                attachments: [{
-                    text: 'Snooze *Notifications* for how long?',
-                    color: '#3AA3E3',
-                    attachment_type: 'default',
-                    callback_id: 'snooze_selection',
-                    actions: [{
-                        name: 'snooze_until',
-                        text: 'Snooze until...',
-                        type: 'select',
-                        options: [{
-                            text: 'Tomorrow',
-                            value: 'Tomorrow'
-                        }, {
-                            text: 'Next Week',
-                            value: 'Next_Week'
-                        }, {
-                            text: 'Next Month',
-                            value: 'Next_Month'
-                        }]
-                    }]
-                }]
-              });
-            res.send();
-            break;
-        }
         case 'menu': {
             res.send({
                 text: 'There are many users in this team',
