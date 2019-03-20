@@ -3,23 +3,23 @@ const queryStrings = require('query-string');
 
 const startsWith = (str1, str2) => str1.toLocaleLowerCase().startsWith(str2.toLocaleLowerCase())
 
-const filterOptions = (data, value) => _.filter(data, ({ options }) => {
-  return !value || _.some(options, ({ label }) => startsWith(label, value));
+const filterOptions = (data, value) => _.filter(data, ({ label }) => {
+  return !value || startsWith(label, value);
 })
 
 const dialogSuggestions = (req, res) => {
   const body = queryStrings.parse(req.body.toString());
-  console.log('Received ACTIONS CALLBACK', body);
   const payload = JSON.parse(body.payload);
+  console.log('dialogSuggestions - Received OPTIONS PAYLOAD', payload);
   const { callback_id } = payload;
 
   switch(callback_id) {
     case 'meeting': {
       const { name, value = '' } = payload;
       if (_.isEqual(name, 'room')) {
-        const option_groups = filterOptions([{
-              label: 'Available',
-              options: [{
+        const option_groups = [{
+          label: 'Available',
+          options: filterOptions([{
               label: 'Demo Room',
               value: 'Demo Room'
             },{
@@ -34,14 +34,14 @@ const dialogSuggestions = (req, res) => {
             },{
             label: 'Conference Room',
               value: 'Conference Room'
-            }]
-          }], value);
+          }], value)
+        }];
         return res.send({ option_groups });
       }
-      if (_.isEqual(name, 'duration')) {
-        const option_groups = filterOptions([{
+      else if (_.isEqual(name, 'duration')) {
+          const option_groups = [{
               label: 'Length of meeting',
-              options: [{
+              options: filterOptions ([{
               label: '15 mins',
               value: '15'
             },{
@@ -59,23 +59,24 @@ const dialogSuggestions = (req, res) => {
             },{
             label: '120 mins',
               value: '120'
-            }]
-          }], value);
+          }], value)
+        }];
         return res.send({ option_groups });
       }
       if (_.isEqual(name, 'year')) {
         const thisYear = (new Date()).getUTCFullYear();
         const nextYear = thisYear + 1;
-        const option_groups = filterOptions([{
+        const option_groups = [{
               label: 'Year',
-              options: [{
+              options: filterOptions([{
               label: thisYear,
               value: thisYear
             },{
             label: nextYear,
               value: nextYear
-            }]
-          }], value);
+            }], value)
+          }];
+
         return res.send({ option_groups });
       }
     }
