@@ -2,7 +2,7 @@
   "//1": "describes your app and its dependencies",
   "//2": "https://docs.npmjs.com/files/package.json",
   "//3": "updating this file will download and update your packages",
-  "name": "Slack-M",
+  "name": "Slack-Meetings-bot",
   "version": "1.0.0",
   "description": "A Slack Bot to organise meetings",
   "author": {
@@ -35,7 +35,8 @@
     "query-string": "6.2.0",
     "request": "2.88.0",
     "underscore": "^1.9.1",
-    "cloudant": "1.10.0-NOTICE"
+    "cloudant": "1.10.0-NOTICE",
+    "uuid": "3.3.2"
   },
   "engines": {
     "node": "10",

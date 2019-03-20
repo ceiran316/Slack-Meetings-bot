@@ -51,6 +51,23 @@ const db = {
                 }
             });
         });
+    },
+    updateDOC: (key, data) => {
+        return db.getDOC(key).then(doc => {
+            let newDoc = Object.assign({}, doc, data);
+            return db.getDB().insert(newDoc, (err, data) => {
+                if (data && data.rev) {
+                    newDoc._rev = data.rev;
+                }
+                if (err) {
+                    newDoc = doc;
+                    console.log('DB INSERT ERROR', err);
+                } else {
+                    console.log('DB INSERT OK');
+                }
+                return db.docs.setDoc(key, newDoc);
+            });
+        });
     }
 }
 

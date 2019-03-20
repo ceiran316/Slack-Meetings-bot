@@ -1,9 +1,12 @@
 const isEmail = require('isemail');
 const queryStrings = require('query-string');
+const uuidv4 = require("uuid/v4");
 
 const web = require('../../../webClient');
-
 const Meetings = require('../../../utils/meetings');
+const API = require('../../../api');
+
+
 
 const dialogSubmission = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -14,7 +17,7 @@ const dialogSubmission = (req, res) => {
     
     switch(callback_id) {
       case 'meeting': {
-        const { channel: { id: channel }, message_ts: ts, user: { id: user }, submission: { email = '' }, submission } = payload;
+        const { channel: { id: channel }, message_ts: ts, user: { id: createBy }, submission: { email = '' }, submission } = payload;
         
         /*if (!isEmail.validate(email)) {
           return res.send({
@@ -41,6 +44,7 @@ const dialogSubmission = (req, res) => {
         res.send();
         
         const meetingObject = {
+          id: uuidv4(),
           name,
           location,
           day: Meetings.getDay(day),
@@ -52,13 +56,20 @@ const dialogSubmission = (req, res) => {
             minutes: `${minuteF}${minuteL}`,
           },
           duration,
-          description
+          description,
+          createBy
         };
         
-        web.chat.postMessage({
-          channel,
-          text: Meetings.getNewMeetingText(meetingObject)
-        });
+        API.meetings.create(meetingObject).then(() => {
+          web.chat.postMessage({
+            channel,
+            text: Meetings.getNewMeetingText(meetingObject)
+          });
+        }).catch(err => {
+          console.log('DB ERROR', err);
+        })
+
+       
 
         break;
       }

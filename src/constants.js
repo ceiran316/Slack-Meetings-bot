@@ -4,9 +4,9 @@ const SLACK_API = `${SLACK}/api`;
 const constants = {
     db: {
         NAME: 'meetings',
-        DOC: 'allMeetings',
-        keys: {
-            
+        DOCS: {
+            USERS: "users",
+            MEETINGS: "meetings"
         }
     },
     server: {
