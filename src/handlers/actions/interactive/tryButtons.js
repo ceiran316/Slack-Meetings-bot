@@ -39,32 +39,39 @@ const buttonsTest = (req, res) => {
                     elements: [{
                         label: 'Meeting Name',
                         name: 'name',
+                        placeholder: 'Choose meeting name',
                         type: 'text',
-                        hint: 'Project Briefing/Demo'
+                        hint: 'eg. Project Briefing/Demo'
                     }, {
                         label: 'Location',
                         name: 'room',
+                        placeholder: 'Choose location',
                         type: 'select',
                         data_source: 'external',
-                        hint: 'Choose meeting location'
                     }, {
                         label: 'Day',
                         name: 'day',
                         placeholder: 'DD',
                         type: 'text',
-                        hint: ''
+                        hint: 'eg. 01 or 21'
                     },{
                         label: 'Month',
                         name: 'month',
                         placeholder: 'MM',
                         type: 'text',
-                        hint: '01 or JAN'
+                        hint: 'eg. Jan/January/01'
                     }, {
+                        label: 'Year',
+                        name: 'year',
+                        placeholder: 'Choose year',
+                        type: 'select',
+                        data_source: 'external'
+                    },{
                         label: 'Start Time',
                         name: 'start',
                         placeholder: 'hh:mm',
                         type: 'text',
-                        hint: '09:00 / 13:00 (24hr)'
+                        hint: 'eg. 09:00 / 13:00 (24hr)'
                     },{
                         label: 'Meeting Duration',
                         name: 'duration',

@@ -38,7 +38,7 @@ const dialogSuggestions = (req, res) => {
           }], value);
         return res.send({ option_groups });
       }
-      else if (_.isEqual(name, 'duration')) {
+      if (_.isEqual(name, 'duration')) {
         const option_groups = filterOptions([{
               label: 'Length of meeting',
               options: [{
@@ -59,6 +59,21 @@ const dialogSuggestions = (req, res) => {
             },{
             label: '120 mins',
               value: '120'
+            }]
+          }], value);
+        return res.send({ option_groups });
+      }
+      if (_.isEqual(name, 'year')) {
+        const thisYear = (new Date()).getUTCFullYear();
+        const nextYear = thisYear + 1;
+        const option_groups = filterOptions([{
+              label: 'Year',
+              options: [{
+              label: thisYear,
+              value: thisYear
+            },{
+            label: nextYear,
+              value: nextYear
             }]
           }], value);
         return res.send({ option_groups });
