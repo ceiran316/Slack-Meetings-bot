@@ -19,7 +19,7 @@ const buttonsTest = (req, res) => {
     res.send({
         channel,
         ts,
-        text: 'Meeting being Updated...'/*,
+        text: 'Meeting being updated...'/*,
         attachments: [{
             title: 'Feeback',
             text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`

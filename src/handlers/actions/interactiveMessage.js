@@ -16,15 +16,15 @@ const interactiveMessage = (req, res) => {
             break;
         }
         case 'update_buttons': {
-            createButtons(req, res);
+            updateButtons(req, res);
             break;
         }
         case 'delete_buttons': {
-            createButtons(req, res);
+            deleteButtons(req, res);
             break;
         }
         case 'read_buttons': {
-            createButtons(req, res);
+            readButtons(req, res);
             break;
         }
         default:
