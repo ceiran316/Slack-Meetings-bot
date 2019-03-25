@@ -20,8 +20,8 @@ const dialogSuggestions = (req, res) => {
         const option_groups = [{
           label: 'Available',
           options: filterOptions([{
-              label: 'Demo Room',
-              value: 'Demo Room'
+            label: 'Demo Room',
+            value: 'Demo Room'
             },{
             label: 'Board Room',
               value: 'Board Room'
@@ -67,15 +67,16 @@ const dialogSuggestions = (req, res) => {
         const thisYear = (new Date()).getUTCFullYear();
         const nextYear = thisYear + 1;
         const option_groups = [{
-              label: 'Year',
-              options: filterOptions([{
-              label: thisYear,
-              value: thisYear
+          label: 'Year',
+          options: filterOptions([{
+            label: thisYear,
+            value: thisYear
             },{
-            label: nextYear,
+              label: nextYear,
               value: nextYear
-            }], value)
-          }];
+            }], 
+          value)
+        }];
 
         return res.send({ option_groups });
       }

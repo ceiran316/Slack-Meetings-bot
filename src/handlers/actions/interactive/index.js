@@ -1,6 +1,21 @@
 //const snoozeSelection = require('./snoozeSelection');
-const tryButtons = require('./tryButtons');
+const createButtons = require('./createButtons');
+const createButtons = require('./updateButtons');
+const createButtons = require('./deleteButtons');
+const createButtons = require('./readButtons');
 
 module.exports = {
-    tryButtons
+    createButtons
+}
+
+module.exports = {
+    updateButtons
+}
+
+module.exports = {
+    deleteButtons
+}
+
+module.exports = {
+    readButtons
 }

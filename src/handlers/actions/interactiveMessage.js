@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const queryStrings = require('query-string');
 
-const { snoozeSelection, tryButtons } = require('./interactive')
+const { snoozeSelection, createButtons } = require('./interactive')
 
 const interactiveMessage = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -11,8 +11,20 @@ const interactiveMessage = (req, res) => {
     const { callback_id } = payload;
 
     switch(callback_id) {
-        case 'try_buttons': {
-            tryButtons(req, res);
+        case 'create_buttons': {
+            createButtons(req, res);
+            break;
+        }
+        case 'update_buttons': {
+            createButtons(req, res);
+            break;
+        }
+        case 'delete_buttons': {
+            createButtons(req, res);
+            break;
+        }
+        case 'read_buttons': {
+            createButtons(req, res);
             break;
         }
         default:
