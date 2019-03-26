@@ -68,17 +68,11 @@ const dialogSubmission = (req, res) => {
             description: meetingObject.description,
             start: [meetingObject.year, 4, meetingObject.day, meetingObject.time.hour-1, meetingObject.time.minutes],
             duration: { minutes: meetingObject.duration }
-            // title: name,
-            // description: description,
-            // text: 'Location: ' + room,
-            // start: [year, month, day, hourF + hourL, minuteF + minuteL],
-            // duration: { minutes: duration }
-          }, (error, value) => {
+           }, (error, value) => {
             if (error) {
               console.log(error)
             }
             res = value;
-          //writeFileSync(`${__dirname}/event.ics`, value)
         })
 
           const mailOptions = {
@@ -110,7 +104,6 @@ const dialogSubmission = (req, res) => {
             color: '#3AA3E3',
             attachment_type: 'default',
             text: Meetings.getNewMeetingText(meetingObject),
-            //thumb_url: 'https://img.icons8.com/office/80/000000/overtime.png',
             thumb_url: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
             actions: [{
                 name: 'accept',
