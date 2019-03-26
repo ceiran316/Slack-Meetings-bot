@@ -5,10 +5,19 @@ const web = require('../../../webClient');
 
 const Meetings = require('../../../utils/meetings');
 
+const nodemailer = require('nodemailer');
+const ics = require('ics');
+const { createReadStream, writeFileSync } = require('fs');
+
+const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
+
+let res;
+
 const dialogSubmission = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
     const payload = JSON.parse(body.payload);
     const { callback_id } = payload;
+  
   
   
     console.log('TCL: dialogSubmission -> callback_id', callback_id);
@@ -28,7 +37,7 @@ const dialogSubmission = (req, res) => {
           year = (new Date().getUTCFullYear())
         } = submission;
         
-        res.send();
+        res.send(); 
         
         const meetingObject = {
           name,
@@ -44,7 +53,55 @@ const dialogSubmission = (req, res) => {
           duration,
           description
         };
+        
+        const sendEmail = () => {
+          var transporter = nodemailer.createTransport({
+             service: 'gmail',
+             auth: {
+                    user: EMAIL_ADDRESS,
+                    pass: EMAIL_PASSWORD
+                }
+            });
 
+          ics.createEvent({
+            title: meetingObject.name,
+            description: meetingObject.description,
+            start: [meetingObject.year, 4, meetingObject.day, meetingObject.time.hour-1, meetingObject.time.minutes],
+            duration: { minutes: meetingObject.duration }
+            // title: name,
+            // description: description,
+            // text: 'Location: ' + room,
+            // start: [year, month, day, hourF + hourL, minuteF + minuteL],
+            // duration: { minutes: duration }
+          }, (error, value) => {
+            if (error) {
+              console.log(error)
+            }
+            res = value;
+          //writeFileSync(`${__dirname}/event.ics`, value)
+        })
+
+          const mailOptions = {
+            from: EMAIL_ADDRESS, // sender address
+            to: ['ceiran316@gmail.com','ceiran316@live.com'], //'ceiran316@gmail.com', // list of receivers
+            //bcc: ['ceiran316@gmail.com', 'antonevyou@gmail.com'],
+            subject: 'Meeting', // Subject line
+            html: '<p>slack-meetings-bot</p>',
+            icalEvent: {
+              filename: 'event.ics',
+              method: 'request',
+              content: res
+            }
+          };
+          transporter.sendMail(mailOptions, function (err, info) {
+             if(err)
+               console.log('SEND MAILERROR', err)
+             else
+               console.log('SENT MAIL', info);
+          });
+        }
+
+        sendEmail();
         web.chat.postMessage({
           channel,
           attachments: [{
@@ -70,7 +127,7 @@ const dialogSubmission = (req, res) => {
             }]
         }]
         });
-
+        
         break;
       }
       default:

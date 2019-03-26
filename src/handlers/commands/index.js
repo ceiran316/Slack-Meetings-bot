@@ -4,56 +4,56 @@ const _ = require('underscore');
 const web = require('../../webClient');
 
 
-const ics = require('ics');
-const { createReadStream, writeFileSync } = require('fs');
+// const ics = require('ics');
+// const { createReadStream, writeFileSync } = require('fs');
 
-const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
+// const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
 
-let res;
+// let res;
 
-const sendEmail = () => {
-  var transporter = nodemailer.createTransport({
-     service: 'gmail',
-     auth: {
-            user: EMAIL_ADDRESS,
-            pass: EMAIL_PASSWORD
-        }
-    });
+// const sendEmail = () => {
+//   var transporter = nodemailer.createTransport({
+//      service: 'gmail',
+//      auth: {
+//             user: EMAIL_ADDRESS,
+//             pass: EMAIL_PASSWORD
+//         }
+//     });
   
-  ics.createEvent({
-  title: 'Slack Meeting Invite 11',
-  description: 'We have to work this weekend',
-  start: [2019, 1, 15, 6, 30],
-  duration: { minutes: 50 }
-}, (error, value) => {
-  if (error) {
-    console.log(error)
-  }
+//   ics.createEvent({
+//   title: 'Slack Meeting Invite 11',
+//   description: 'We have to work this weekend',
+//   start: [2019, 1, 15, 6, 30],
+//   duration: { minutes: 50 }
+// }, (error, value) => {
+//   if (error) {
+//     console.log(error)
+//   }
     
-    res = value;
+//     res = value;
  
-  // writeFileSync(`${__dirname}/event.ics`, value)
-})
+//   // writeFileSync(`${__dirname}/event.ics`, value)
+// })
   
-  const mailOptions = {
-    from: EMAIL_ADDRESS, // sender address
-    to: [EMAIL_ADDRESS], //'ceiran316@gmail.com', // list of receivers
-    bcc: ['ceiran316@gmail.com', 'holmes.william@gmail.com'],
-    subject: 'Slack Meeting Invite', // Subject line
-    html: '<p>HELLO WORLD</p>',
-    icalEvent: {
-      filename: 'event.ics',
-        method: 'request',
-        content: res
-    }
-  };
-  transporter.sendMail(mailOptions, function (err, info) {
-     if(err)
-       console.log('SEND MAILERROR', err)
-     else
-       console.log('SENT MAIL', info);
-  });
-}
+//   const mailOptions = {
+//     from: EMAIL_ADDRESS, // sender address
+//     to: [EMAIL_ADDRESS], //'ceiran316@gmail.com', // list of receivers
+//     bcc: ['ceiran316@gmail.com', 'holmes.william@gmail.com'],
+//     subject: 'Slack Meeting Invite', // Subject line
+//     html: '<p>HELLO WORLD</p>',
+//     icalEvent: {
+//       filename: 'event.ics',
+//         method: 'request',
+//         content: res
+//     }
+//   };
+//   transporter.sendMail(mailOptions, function (err, info) {
+//      if(err)
+//        console.log('SEND MAILERROR', err)
+//      else
+//        console.log('SENT MAIL', info);
+//   });
+// }
 
 const commands = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
