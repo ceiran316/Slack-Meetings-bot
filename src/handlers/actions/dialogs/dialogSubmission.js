@@ -73,6 +73,28 @@ const dialogSubmission = (req, res) => {
           });
         })
 
+        web.chat.postMessage({
+          channel,
+          attachments: [{
+            title: 'Meeting Request',
+            callback_id: 'create_buttons',
+            color: '#3AA3E3',
+            attachment_type: 'default',
+            actions: [{
+                name: 'decision',
+                value: 'yes',
+                style: 'primary',
+                text: 'Interested',
+                type: 'button'                      
+            }, {
+                name: 'decision',
+                value: 'no',
+                text: 'Decline',
+                type: 'button',
+                style: 'danger',
+            }]
+        }]
+        })
        
 
         break;
