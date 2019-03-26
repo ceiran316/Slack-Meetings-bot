@@ -16,9 +16,7 @@ const dialogSubmission = (req, res) => {
     switch(callback_id) {
       case 'meeting': {
         const { channel: { id: channel }, message_ts: ts, user: { id: user }, submission: { email = '' }, submission } = payload;
-        
 
-        
         const {
           name,
           room: location,
@@ -29,17 +27,6 @@ const dialogSubmission = (req, res) => {
           start: [hourF, hourL, semi, minuteF, minuteL],
           year = (new Date().getUTCFullYear())
         } = submission;
-        
-//         if (location === 'Demo Room') {
-//           return res.send({
-//             errors: [{
-//               name: 'room',
-//               error: "Demo Room not available"
-//             }]
-            
-//           });
-//           break;
-//         }
         
         res.send();
         
@@ -57,29 +44,26 @@ const dialogSubmission = (req, res) => {
           duration,
           description
         };
-        
-        // web.chat.postMessage({
-        //   channel,
-        //   text: Meetings.getNewMeetingText(meetingObject)
-        // });
+
         web.chat.postMessage({
           channel,
           attachments: [{
             title: `<@${user}> has created a Meeting Event`,
-            callback_id: 'meeting_event_buttons',
+            callback_id: 'meeting_accept_buttons',
             color: '#3AA3E3',
             attachment_type: 'default',
             text: Meetings.getNewMeetingText(meetingObject),
-            thumb_url: 'https://platform.slack-edge.com/img/default_application_icon.png',
+            //thumb_url: 'https://img.icons8.com/office/80/000000/overtime.png',
+            thumb_url: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
             actions: [{
                 name: 'accept',
-                value: 'accpet',
+                value: 'the_meeting_id',
                 style: 'primary',
                 text: 'Accept',
                 type: 'button'                      
             }, {
                 name: 'decline',
-                value: 'decline',
+                value: 'the_meeting_id',
                 text: 'Decline',
                 type: 'button',
                 style: 'danger',

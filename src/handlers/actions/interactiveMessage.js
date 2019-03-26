@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const queryStrings = require('query-string');
 
-const { createButtons, updateButtons, deleteButtons, readButtons } = require('./interactive')
+const { createButtons, updateButtons, deleteButtons, readButtons, meetingButtons } = require('./interactive')
 
 const interactiveMessage = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -25,6 +25,10 @@ const interactiveMessage = (req, res) => {
         }
         case 'read_buttons': {
             readButtons(req, res);
+            break;
+        }
+        case 'meeting_accept_buttons': {
+            meetingButtons(req, res);
             break;
         }
         default:
