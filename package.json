@@ -1,41 +1,32 @@
 {
-  "name": "tets-project-bot",
+  "//1": "describes your app and its dependencies",
+  "//2": "https://docs.npmjs.com/files/package.json",
+  "//3": "updating this file will download and update your packages",
+  "name": "Slack-Meetings-bot",
   "version": "1.0.0",
-  "description": "A Slack Bot to echo back messages",
+  "description": "A Slack Bot to organise meetings",
   "author": {
     "name": "Ceiran McCabe",
     "email": "ceiran.mccabeibm.com"
   },
-  "contributors": [
-    {
-      "name": "Alan Greene",
-      "email": "alangree@ie.ibm.com"
-    }
-  ],
   "main": "index.js",
   "scripts": {
-    "prestart": "concurrently \"nodemon --inspect ./index.js\"",
-    "start": "node index.js",
-    "dev": "concurrently \"node ./dev/ngrok.js\" \"nodemon --inspect ./index.js\""
-  },
-  "keywords": [],
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "4.1.0",
-    "ngrok": "3.1.0",
-    "nodemon": "1.18.7"
+    "test": "npm test",
+    "start": "node index.js"
   },
   "dependencies": {
     "@slack/client": "4.12.0",
-    "@slack/events-api": "2.2.0",
+    "@slack/events-api": "2.1.1",
+    "bluebird": "^3.5.1",
     "body-parser": "1.18.3",
     "botkit": "0.6.21",
     "debug": "4.1.0",
     "dotenv": "6.1.0",
-    "email-alert": "^1.0.0",
     "express": "4.16.4",
+    "got": "9.6.0",
     "isemail": "3.2.0",
-    "metascraper": "4.7.0",
+    "email-alert": "^1.0.0",
+    "metascraper": "^4.10.1",
     "metascraper-description": "4.7.0",
     "metascraper-image": "4.7.0",
     "metascraper-title": "4.7.0",
@@ -45,14 +36,20 @@
     "q": "1.5.1",
     "query-string": "6.2.0",
     "request": "2.88.0",
-    "slackbots": "1.2.0",
     "underscore": "^1.9.1",
+    "cloudant": "1.10.0-NOTICE",
+    "uuid": "3.3.2",
     "nodemailer": "^6.0.0",
-    "ics": "2.13.2",
-    "uuid": "^3.3.2"
+    "ics": "2.13.2"
   },
   "engines": {
-    "node": ">= 10.14.1",
+    "node": "10",
     "npm": ">= 6.4.1"
-  }
+  },
+  "repository": {
+    "url": "https://glitch.com/edit/#!/hello-express"
+  },
+  "keywords": [],
+  "license": "MIT",
+  "devDependencies": {}
 }
