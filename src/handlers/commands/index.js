@@ -3,7 +3,7 @@ const _ = require('underscore');
 
 const web = require('../../webClient');
 
-const commands = (req, res) => {
+const commands = async (req, res) => {
     const body = queryStrings.parse(req.body.toString());
     console.log('slashCommands -> body', body);
     const { command, user_id: user, channel_id: channel, text, trigger_id } = body;

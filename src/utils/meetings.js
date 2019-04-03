@@ -1,19 +1,24 @@
 const uuidv1 = require('uuid/v1');
 const ics = require('ics');
+const Email = require('./email');
+const Users = require('./users');
 
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+const meetingsStore = {};
 
 const Meetings = {
   
   createEvent: meeting => {
-    const { id: uid, name: title, location, description, year, day, month, time: { hour, minutes }, duration } = meeting;
+    const { id: uid, name: title, location, description, year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
     const { err, value } = ics.createEvent({
         uid,
         title,
         location,
         description,
         start: [year, month, day, hour-1, minutes],
-        duration
+        duration,
+        organizer
     });
     if (err) {
       console.log('ERROR Meetings createEvent', err);
@@ -22,7 +27,7 @@ const Meetings = {
     return value;
   },
   
-  createObject: details => {
+  createObject: (userId, details, organizer) => {
     const {
       name,
       room: location,
@@ -31,7 +36,7 @@ const Meetings = {
       day,
       month,
       start: [hourF, hourL, semi = ':', minuteF = 0, minuteL = 0],
-      year = (new Date().getUTCFullYear())
+      year = (new Date().getUTCFullYear()),
     } = details;
     
     const monthName = Meetings.getMonthName(month);
@@ -49,16 +54,19 @@ const Meetings = {
           hour: parseInt(`${hourF}${hourL}`),
           minutes: parseInt(`${minuteF}${minuteL}`),
         },
-        organizer: { name: 'Admin', email: 'test@ibm.com' },
+        organizer,
         duration: { minutes: parseInt(duration) },
-        description
+        description,
+        patricipants: [userId]
     };
     
-    return {
+    meetingsStore[meeting.id] = {
       ...meeting,
       event: Meetings.createEvent(meeting),
       template: Meetings.createTemplate(meeting)
     };
+    
+    return meetingsStore[meeting.id];
   },
   
   getMonth: month => (months.indexOf(month) + 1),
@@ -127,6 +135,31 @@ const Meetings = {
     }
     console.log('createTemplate', template);
     return template;
+  },
+  
+  sendMeetingInvite: async (userId, meetingId) => {
+      //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
+    const { email } = await Users.getKeys(userId, 'email');
+    const meeting = meetingsStore[meetingId];
+    console.log('sendMeetingInvite meeting', userId, email, meeting);
+      if(meeting) {
+        Email.send({
+          to: [email], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+          subject: `Meeting Invite: ${meeting.name}`, // Subject line
+          html: `<p>${meeting.description}</p>`,
+          icalEvent: {
+            filename: 'event.ics',
+            method: 'request',
+            content: meeting.event
+          }
+        }).then(res => {
+          console.log('Successfully Sent Email');
+        }).catch(err => {
+          console.log('ERROR Email Send', err);
+        });
+        return true;
+      }
+    return false;
   }
 }
 

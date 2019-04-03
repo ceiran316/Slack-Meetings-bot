@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const queryStrings = require('query-string');
 
-const { createButtons, updateButtons, deleteButtons, readButtons, meetingButtons } = require('./interactive')
+const {  createButtons, updateButtons, deleteButtons, readButtons, meetingButtons } = require('./interactive')
 
 const interactiveMessage = (req, res) => {
     const body = queryStrings.parse(req.body.toString());

@@ -1,8 +1,9 @@
 const queryStrings = require('query-string');
+const { Meetings, Users } = require('../../../utils');
 
 const web = require('../../../webClient');
 
-const buttonsTest = (req, res) => {
+const buttonsTest = async (req, res) => {
     const body = queryStrings.parse(req.body.toString());
     console.log('Received buttonsTest body', body);
     const payload = JSON.parse(body.payload);
@@ -21,15 +22,22 @@ const buttonsTest = (req, res) => {
 
     switch(action.name) {
       case "accept": {
-        console.log('ACCEPTED', action.value);
-        console.log('WEBCLIENT', web.users);
-        web.users.profile.get({ user, include_labels: true }).then(res => console.log('PERSON', res)).catch(err => console.log('GET PROFILE ERROR', err));
-        web.chat.postEphemeral({
-          user,
-          channel,
-          response_type: 'in_channel',
-          text: `You've successfully \`accepted\` this meeting. We have sent a calendar invite to .\nSee you then! 👍`
-        });
+        console.log('ACCEPTED', user, action.value);
+        const { email } = await Users.getKeys(user, 'email');
+        console.log('EMAIL', email);
+        const sent = await Meetings.sendMeetingInvite(user, action.value);
+        let text = '';
+        if (sent) {
+          text = `You've successfully \`accepted\` this meeting. We have sent a calendar invite to ${email} .\nSee you then! 👍`;
+        } else {
+          text = `Oops. There has been a problem. The meeting may have already been cancelled! 👎`;
+        }
+         web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            text
+          });
         break;
       }
       case "decline": {
