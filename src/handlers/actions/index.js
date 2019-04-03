@@ -3,12 +3,15 @@ const queryStrings = require('query-string');
 const { dialogSubmission, dialogSuggestion } = require('./dialogs');
 const interactiveMessage = require('./interactiveMessage');
 const messageAction = require('./messageAction');
+const blockActions = require('./blockActions');
+
+const web = require('../../webClient');
 
 const actions = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
     console.log('Received ACTIONS CALLBACK', body);
     const payload = JSON.parse(body.payload);
-    const { type } = payload;
+    const { type, state } = payload;
 
     console.log('TCL: actions -> type', type);
 
@@ -24,6 +27,9 @@ const actions = (req, res) => {
         }
         case 'dialog_submission': {
             return dialogSubmission(req, res);
+        }
+        case 'block_actions': {
+          return blockActions(req, res);
         }
         default: {
             res.send();

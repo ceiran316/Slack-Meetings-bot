@@ -1,17 +1,21 @@
 const isEmail = require('isemail');
 const queryStrings = require('query-string');
+const { uuidv1 } = require('uuid/v1');
 
 const web = require('../../../webClient');
 
-const Meetings = require('../../../utils/meetings');
+const { Email, Meetings } = require('../../../utils');
 
 const nodemailer = require('nodemailer');
 const ics = require('ics');
-const { createReadStream, writeFileSync } = require('fs');
 
 const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
 
 let res;
+
+const sendEmail = () => {
+  Email.send({});
+}
 
 const dialogSubmission = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -25,77 +29,82 @@ const dialogSubmission = (req, res) => {
     switch(callback_id) {
       case 'meeting': {
         const { channel: { id: channel }, message_ts: ts, user: { id: user }, submission: { email = '' }, submission } = payload;
-
-        const {
-          name,
-          room: location,
-          duration,
-          description,
-          day,
-          month,
-          start: [hourF, hourL, semi, minuteF, minuteL],
-          year = (new Date().getUTCFullYear())
-        } = submission;
         
         res.send(); 
         
-        const meetingObject = {
-          name,
-          location,
-          day: Meetings.getDay(day),
-          ordinal: Meetings.getOrdinal(day),
-          month: Meetings.getMonth(month),
-          year,
-          time: {
-            hour: `${hourF}${hourL}`,
-            minutes: `${minuteF}${minuteL}`,
-          },
-          duration,
-          description
-        };
+        const meetingObject = Meetings.createObject(submission);
         
-        const sendEmail = () => {
-          var transporter = nodemailer.createTransport({
-             service: 'gmail',
-             auth: {
-                    user: EMAIL_ADDRESS,
-                    pass: EMAIL_PASSWORD
-                }
-            });
+        console.log('meetingObject', meetingObject);
+        
+        // TODO: Save to DB
+        
+        //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
+        Email.send({
+          to: ['holmes.william@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+          subject: `Meeting Invite: ${meetingObject.name}`, // Subject line
+          html: `<p>${meetingObject.description}</p>`,
+          icalEvent: {
+            filename: 'event.ics',
+            method: 'request',
+            content: meetingObject.event
+          }
+        }).then(res => {
+          console.log('Successfully Sent EMail');
+        }).catch(err => {
+          console.log('ERROR Email Send', err);
+        });
+        
+        
+//         const sendEmail2 = () => {
+//           var transporter = nodemailer.createTransport({
+//              service: 'gmail',
+//              auth: {
+//                     user: EMAIL_ADDRESS,
+//                     pass: EMAIL_PASSWORD
+//                 }
+//             });
 
-          ics.createEvent({
-            title: meetingObject.name,
-            description: meetingObject.description,
-            start: [meetingObject.year, 4, meetingObject.day, meetingObject.time.hour-1, meetingObject.time.minutes],
-            duration: { minutes: meetingObject.duration }
-           }, (error, value) => {
-            if (error) {
-              console.log(error)
-            }
-            res = value;
-        })
+//           ics.createEvent({
+//             title: meetingObject.name,
+//             description: meetingObject.description,
+//             start: [meetingObject.year, 4, meetingObject.day, meetingObject.time.hour-1, meetingObject.time.minutes],
+//             duration: { minutes: meetingObject.duration }
+//             // title: name,
+//             // description: description,
+//             // text: 'Location: ' + room,
+//             // start: [year, month, day, hourF + hourL, minuteF + minuteL],
+//             // duration: { minutes: duration }
+//           }, (error, value) => {
+//             if (error) {
+//               console.log(error)
+//             }
+//             res = value;
+//           //writeFileSync(`${__dirname}/event.ics`, value)
+//         })
 
-          const mailOptions = {
-            from: EMAIL_ADDRESS, // sender address
-            to: ['ceiran316@gmail.com','ceiran316@live.com'], //'ceiran316@gmail.com', // list of receivers
-            //bcc: ['ceiran316@gmail.com', 'antonevyou@gmail.com'],
-            subject: 'Meeting', // Subject line
-            html: '<p>slack-meetings-bot</p>',
-            icalEvent: {
-              filename: 'event.ics',
-              method: 'request',
-              content: res
-            }
-          };
-          transporter.sendMail(mailOptions, function (err, info) {
-             if(err)
-               console.log('SEND MAILERROR', err)
-             else
-               console.log('SENT MAIL', info);
-          });
-        }
+//           const mailOptions = {
+//             from: EMAIL_ADDRESS, // sender address
+//             to: ['holmes.william@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+//             //bcc: ['ceiran316@gmail.com', 'antonevyou@gmail.com'],
+//             subject: 'Meeting', // Subject line
+//             html: '<p>slack-meetings-bot</p>',
+//             icalEvent: {
+//               filename: 'event.ics',
+//               method: 'request',
+//               content: res
+//             }
+//           };
+//           transporter.sendMail(mailOptions, function (err, info) {
+//              if(err)
+//                console.log('SEND MAILERROR', err)
+//              else
+//                console.log('SENT MAIL', info);
+//           });
+//         }
 
-        sendEmail();
+        // sendEmail();
+        const { day, template } = meetingObject;
+        
         web.chat.postMessage({
           channel,
           attachments: [{
@@ -103,8 +112,11 @@ const dialogSubmission = (req, res) => {
             callback_id: 'meeting_accept_buttons',
             color: '#3AA3E3',
             attachment_type: 'default',
-            text: Meetings.getNewMeetingText(meetingObject),
-            thumb_url: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
+            text: template,
+            thumb_url: 'https://img.icons8.com/office/80/000000/overtime.png',
+            footer_icon: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
+            footer: 'Add to Calendar',
+            // thumb_url: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${meetingObject.day}.ico`,
             actions: [{
                 name: 'accept',
                 value: 'the_meeting_id',
@@ -118,7 +130,7 @@ const dialogSubmission = (req, res) => {
                 type: 'button',
                 style: 'danger',
             }]
-        }]
+          }]
         });
         
         break;
