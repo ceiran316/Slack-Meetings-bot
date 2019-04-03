@@ -1,5 +1,7 @@
 const uuidv1 = require('uuid/v1');
 const ics = require('ics');
+const _ = require('underscore');
+
 const Email = require('./email');
 const Users = require('./users');
 
@@ -8,9 +10,9 @@ const months = ["January","February","March","April","May","June","July","August
 const meetingsStore = {};
 
 const Meetings = {
-  
   createEvent: meeting => {
     const { id: uid, name: title, location, description, year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
+    console.log('createEvent', organizer);
     const { err, value } = ics.createEvent({
         uid,
         title,
@@ -57,10 +59,11 @@ const Meetings = {
         organizer,
         duration: { minutes: parseInt(duration) },
         description,
-        patricipants: [userId]
+        participants: [userId]
     };
     
     meetingsStore[meeting.id] = {
+      ...meetingsStore[meeting.id],
       ...meeting,
       event: Meetings.createEvent(meeting),
       template: Meetings.createTemplate(meeting)
@@ -136,29 +139,42 @@ const Meetings = {
     console.log('createTemplate', template);
     return template;
   },
+  hasParticipant: (meetingId, userId) => {
+    return _.contains(meetingsStore[meetingId].participants, userId);
+  },
+  addParticipant: (meetingId, userId) => {
+    meetingsStore[meetingId].participants = _.union(meetingsStore[meetingId].participants, [userId]);
+  },
+  removeParticipant: (meetingId, userId) => {
+    meetingsStore[meetingId].participants = _.without(meetingsStore[meetingId].participants, userId);
+  },
   
-  sendMeetingInvite: async (userId, meetingId) => {
+  sendMeetingInvite: async (meetingId, userId) => {
       //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
-    const { email } = await Users.getKeys(userId, 'email');
     const meeting = meetingsStore[meetingId];
+    const { email } = await Users.getKeys(userId, 'email');
     console.log('sendMeetingInvite meeting', userId, email, meeting);
-      if(meeting) {
-        Email.send({
-          to: [email], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
-          subject: `Meeting Invite: ${meeting.name}`, // Subject line
-          html: `<p>${meeting.description}</p>`,
-          icalEvent: {
-            filename: 'event.ics',
-            method: 'request',
-            content: meeting.event
-          }
-        }).then(res => {
-          console.log('Successfully Sent Email');
-        }).catch(err => {
-          console.log('ERROR Email Send', err);
-        });
-        return true;
-      }
+
+    if(email && meeting) {
+      Email.send({
+        to: [email, 'ceiran316@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+        subject: `Meeting Invite: ${meeting.name}`, // Subject line
+        html: `<p>${meeting.description}</p>`,
+        icalEvent: {
+          filename: 'event.ics',
+          method: 'request',
+          content: meeting.event
+        }
+      }).then(res => {
+        console.log('Successfully Sent Email');
+      }).catch(err => {
+        console.log('ERROR Email Send', err);
+      });
+
+      Meetings.addParticipant(meetingId, userId);
+
+      return true;
+    }
     return false;
   }
 }

@@ -10,7 +10,6 @@ const buttonsTest = (req, res) => {
     const {
         user: { id: userId },
         actions: [action],
-        //dialogSubmission: [submission],
         channel: { id: channel },
         message_ts: ts,
       trigger_id
@@ -19,11 +18,7 @@ const buttonsTest = (req, res) => {
     res.send({
         channel,
         ts,
-        text: 'Meeting being Updated...'/*,
-        attachments: [{
-            title: 'Feeback',
-            text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`
-        }]*/
+        text: 'Meeting being Updated...'
     });
   console.log("action: ", action.value);
     if (action.value === 'yes'){
@@ -84,14 +79,8 @@ const buttonsTest = (req, res) => {
                         optional: true,
                         type: 'textarea',
                         hint: 'Meeting notes, Pizza/cake after'
-                    }/*, {
-                        label: 'Invite',
-                        name: 'manager',
-                        type: 'select',
-                        data_source: 'users'
-                    }*/]
+                    }]
                 }
-                
             });
     }
 }

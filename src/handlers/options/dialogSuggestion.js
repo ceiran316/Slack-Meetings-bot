@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const queryStrings = require('query-string');
 
-const startsWith = (str1, str2) => str1.toLocaleLowerCase().startsWith(str2.toLocaleLowerCase())
+const startsWith = (str1 = '', str2 = '') => String(str1).toLocaleLowerCase().startsWith(String(str2).toLocaleLowerCase())
 
 const filterOptions = (data, value) => _.filter(data, ({ label }) => {
   return !value || startsWith(label, value);
@@ -77,11 +77,9 @@ const dialogSuggestions = (req, res) => {
             }], 
           value)
         }];
-
         return res.send({ option_groups });
       }
     }
-    
     default: {
       res.send();
     }

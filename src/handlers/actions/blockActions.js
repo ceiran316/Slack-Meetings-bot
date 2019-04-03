@@ -13,23 +13,26 @@ const blockActions = (req, res) => {
   switch(action.action_id) {
     case 'no_create_meeting': {
       console.log('remove meeting');
-      // web.chat.delete({
-      //   channel,
-      //   ts
-      // });
-      res.send({
-        'response_type': 'ephemeral',
-        'text': '',
-        'replace_original': true,
-        'delete_original': true
+      web.chat.delete({
+        channel,
+        ts
       });
+      res.send();
       break;
     }
     case 'yes_create_meeting': {
       console.log('OPEN MEETING DIALOG');
+      web.chat.delete({
+        channel,
+        ts
+      });
+      // OPEN Dialog
+      res.send();
+      break;
     }
     case 'date_create_meeting' : {
-      res.send({
+      
+      web.chat.postEphemeral({
           user,
           channel,
           attachments: [{
@@ -40,11 +43,6 @@ const blockActions = (req, res) => {
                 "type": "mrkdwn",
                 "text": "Would you like to create a :spiral_calendar_pad: *New Meeting*?"
               }
-              // ,"accessory": {
-              //   "type": "image",
-              //   "image_url": "https://api.slack.com/img/blocks/bkb_template_images/notifications.png",
-              //   "alt_text": "calendar thumbnail"
-              // }
             }, {
                 "type": "divider"
               }, {
@@ -71,6 +69,7 @@ const blockActions = (req, res) => {
             }]
           }]
         });
+      res.send();
       break;
     } 
     default:

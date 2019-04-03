@@ -25,7 +25,7 @@ const commands = async (req, res) => {
         break;
       }
       case 'create': {
-        web.chat.postEphemeral({
+        web.chat.postMessage({
           user,
           channel,
           attachments: [{
@@ -36,11 +36,6 @@ const commands = async (req, res) => {
                 "type": "mrkdwn",
                 "text": "Would you like to create a :spiral_calendar_pad: *New Meeting*?"
               }
-              // ,"accessory": {
-              //   "type": "image",
-              //   "image_url": "https://api.slack.com/img/blocks/bkb_template_images/notifications.png",
-              //   "alt_text": "calendar thumbnail"
-              // }
             }, {
                 "type": "divider"
               }, {
@@ -128,13 +123,7 @@ const commands = async (req, res) => {
                     value: 'yes',
                     style: 'primary',
                     text: 'Yes',
-                    type: 'button'/*,
-                    confirm: {
-                        title: 'Delete meeting?',
-                        ok_text: 'Yes, im sure',
-                        dismiss_text: 'Cancel'
-                    }*/
-
+                    type: 'button'
                 }, {
                     name: 'decision',
                     value: 'no',
@@ -161,13 +150,7 @@ const commands = async (req, res) => {
                     value: 'yes',
                     style: 'primary',
                     text: 'Yes',
-                    type: 'button'/*,
-                    confirm: {
-                        title: 'Delete meeting?',
-                        ok_text: 'Yes, im sure',
-                        dismiss_text: 'Cancel'
-                    }*/
-
+                    type: 'button'
                 }, {
                     name: 'decision',
                     value: 'no',

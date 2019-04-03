@@ -1,6 +1,5 @@
 const queryStrings = require('query-string');
 const { Meetings, Users } = require('../../../utils');
-
 const web = require('../../../webClient');
 
 const buttonsTest = async (req, res) => {
@@ -11,7 +10,6 @@ const buttonsTest = async (req, res) => {
     const {
         user: { id: user },
         actions: [action],
-        //dialogSubmission: [submission],
         channel: { id: channel },
         message_ts: ts,
       trigger_id,
@@ -22,15 +20,24 @@ const buttonsTest = async (req, res) => {
 
     switch(action.name) {
       case "accept": {
-        console.log('ACCEPTED', user, action.value);
-        const { email } = await Users.getKeys(user, 'email');
-        console.log('EMAIL', email);
-        const sent = await Meetings.sendMeetingInvite(user, action.value);
+        const meetingId = action.value;
+        console.log('ACCEPTED', user, meetingId);
+        if (Meetings.hasParticipant(meetingId, user)) {
+          web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            text: `You're already a participant in this meeting. 👍`
+          });
+          break;
+        }
+        const sent = await Meetings.sendMeetingInvite(meetingId, user);
         let text = '';
         if (sent) {
-          text = `You've successfully \`accepted\` this meeting. We have sent a calendar invite to ${email} .\nSee you then! 👍`;
+          const { email } = await Users.getKeys(user, 'email');
+          text = `You've successfully \`accepted\` this meeting. We have sent a calendar invite to :email: ${email} .\nSee you then! 👍`;
         } else {
-          text = `Oops. There has been a problem. The meeting may have already been cancelled! 👎`;
+          text = `Oops. There has been a problem. We couldn't find your email address or the meeting may have already been cancelled! 👎`;
         }
          web.chat.postEphemeral({
             user,
@@ -41,7 +48,21 @@ const buttonsTest = async (req, res) => {
         break;
       }
       case "decline": {
-        console.log('DECLINED', action.value);
+        const meetingId = action.value;
+        console.log('DECLINED', meetingId);
+
+        if (!Meetings.hasParticipant(meetingId, user)) {
+          web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            text: `You weren't participating in this meeting anyway. 👍`
+          });
+          break;
+        }
+        
+        Meetings.removeParticipant(meetingId, user);
+        
         web.chat.postEphemeral({
           user,
           channel,
@@ -52,43 +73,6 @@ const buttonsTest = async (req, res) => {
       }
       default:
     }
-
-    // res.send({
-    //     channel,
-    //     ts,
-    //     text: 'Meeting being displayed...'/*,
-    //     attachments: [{
-    //         title: 'Feeback',
-    //         text : `Thanks for the Feeback <@${userId}>\n${JSON.stringify(action)}`
-    //     }]*/
-    // });
-//   console.log("action: ", action.value);
-//     if (action.value === 'meetingId1'){
-//               web.dialog.open({
-//                 trigger_id,
-//                 dialog: {
-//                     callback_id: 'meeting',
-//                     title: 'display Meeting',
-//                     submit_label: 'Send',
-//                     notify_on_cancel: false,
-//                     state: 'Limo',
-//                     // Max 5 elements
-//                     elements: [{
-//                         label: 'Meeting Name',
-//                         name: 'name',
-//                         placeholder: 'Choose meeting name',
-//                         type: 'text',
-//                         hint: 'eg. Project Briefing/Demo'
-//                     }/*, {
-//                         label: 'Invite',
-//                         name: 'manager',
-//                         type: 'select',
-//                         data_source: 'users'
-//                     }*/]
-//                 }
-                
-//             });
-//     }
 }
 
 module.exports = buttonsTest;

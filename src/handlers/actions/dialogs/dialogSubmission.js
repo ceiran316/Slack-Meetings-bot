@@ -1,9 +1,7 @@
 const isEmail = require('isemail');
 const queryStrings = require('query-string');
 const { uuidv1 } = require('uuid/v1');
-
 const web = require('../../../webClient');
-
 const { Email, Meetings, Users } = require('../../../utils');
 
 const nodemailer = require('nodemailer');
@@ -32,8 +30,6 @@ const dialogSubmission = async (req, res) => {
 
         const { id: meetingId, day, template } = meetingObject;
         
-        Meetings.sendMeetingInvite(userId, meetingId);
-        
         web.chat.postMessage({
           channel,
           attachments: [{
@@ -61,6 +57,8 @@ const dialogSubmission = async (req, res) => {
             }]
           }]
         });
+        
+        Meetings.sendMeetingInvite(meetingId, userId);
         
         break;
       }

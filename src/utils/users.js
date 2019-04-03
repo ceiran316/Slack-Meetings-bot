@@ -12,6 +12,11 @@ const Users = {
       usersStore[userId] = { ...profile, userId, name: profile.real_name };
     }
     console.log('Users getUser', usersStore[userId]);
+    // TEMP FIX - As my email address doesn't return for some reason.
+    if (userId === 'UDW87UF6U') {
+      usersStore[userId].email = 'holmes.william@gmail.com';
+    }
+    // ***
     return usersStore[userId];
   },
   getKeys: async (userId, ...keys) => {
