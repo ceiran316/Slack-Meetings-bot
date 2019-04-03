@@ -40,7 +40,7 @@ const dialogSubmission = (req, res) => {
         
         //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
         Email.send({
-          to: ['holmes.william@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+          to: ['ceiran316@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
           subject: `Meeting Invite: ${meetingObject.name}`, // Subject line
           html: `<p>${meetingObject.description}</p>`,
           icalEvent: {
