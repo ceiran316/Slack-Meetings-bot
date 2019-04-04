@@ -2,6 +2,9 @@ const SLACK = 'https://slack.com';
 const SLACK_API = `${SLACK}/api`;
 
 const constants = {
+    email: {
+      SERVICE: 'gmail'
+    },
     db: {
         NAME: 'meetings',
         DOCS: {
