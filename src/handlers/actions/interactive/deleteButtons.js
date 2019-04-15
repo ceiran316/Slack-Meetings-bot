@@ -18,7 +18,7 @@ const buttonsTest = (req, res) => {
     res.send({
         channel,
         ts,
-        text: 'Meeting being deleted...'/
+        text: 'Meeting being deleted...'
     });
   console.log("action: ", action.value);
     if (action.value === 'yes'){
