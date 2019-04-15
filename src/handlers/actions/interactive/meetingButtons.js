@@ -1,5 +1,6 @@
 const queryStrings = require('query-string');
-const { Meetings, Users } = require('../../../utils');
+const { Meetings, Users, Reminders } = require('../../../utils');
+
 const web = require('../../../webClient');
 
 const buttonsTest = async (req, res) => {
@@ -22,7 +23,8 @@ const buttonsTest = async (req, res) => {
       case "accept": {
         const meetingId = action.value;
         console.log('ACCEPTED', user, meetingId);
-        if (Meetings.hasParticipant(meetingId, user)) {
+        const hasParticipant = await Meetings.hasParticipant(meetingId, user)
+        if (hasParticipant) {
           web.chat.postEphemeral({
             user,
             channel,
@@ -35,9 +37,20 @@ const buttonsTest = async (req, res) => {
         let text = '';
         if (sent) {
           const { email } = await Users.getKeys(user, 'email');
-          text = `You've successfully \`accepted\` this meeting. We have sent a calendar invite to :email: ${email} .\nSee you then! 👍`;
+          web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            text: `You've successfully \`accepted\` this meeting. We have sent a calendar invite to :email: ${email} .\nSee you then! 👍`
+          });
+          return
         } else {
-          text = `Oops. There has been a problem. We couldn't find your email address or the meeting may have already been cancelled! 👎`;
+          web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            text: `Oops. There has been a problem. We couldn't find your email address or the meeting may have already been cancelled! 👎`
+          });
         }
          web.chat.postEphemeral({
             user,
@@ -48,10 +61,14 @@ const buttonsTest = async (req, res) => {
         break;
       }
       case "decline": {
-        const meetingId = action.value;
+        const meetingId = JSON.parse(action.value);
         console.log('DECLINED', meetingId);
+        
+        const hasParticipant = await Meetings.hasParticipant(meetingId, user);
+        
+        console.log('decline hasParticipant', hasParticipant);
 
-        if (!Meetings.hasParticipant(meetingId, user)) {
+        if (!hasParticipant) {
           web.chat.postEphemeral({
             user,
             channel,
@@ -61,7 +78,8 @@ const buttonsTest = async (req, res) => {
           break;
         }
         
-        Meetings.removeParticipant(meetingId, user);
+        await Meetings.removeParticipant(meetingId, user);
+        // await Reminders.remove({ user, channel });
         
         web.chat.postEphemeral({
           user,

@@ -34,6 +34,7 @@ const commands = async (req, res) => {
         
         break;
       }
+      case 'getreminders':
       case 'getreminder': {
         const allReminders = await Reminders.getAll({ user, channel });
         const data = allReminders.reduce((block, schedule) => {
@@ -70,6 +71,14 @@ const commands = async (req, res) => {
                   "text": {
                     "type": "plain_text",
                     "text": "Delete Meeting",
+                    "emoji": true
+                  },
+                  value: 'some_meeting_data',
+                },
+              {
+                  "text": {
+                    "type": "plain_text",
+                    "text": "Leave Meeting",
                     "emoji": true
                   },
                   value: 'some_meeting_data',
@@ -164,50 +173,62 @@ const commands = async (req, res) => {
         break;
       }
       case 'display': {
-        const allMeetings = await Meetings.getAll();
-        const data = allMeetings.reduce((block, meeting) => {
-          console.log('meeting', meeting);
-          const { id, name, description, location, day, ordinal, monthName, year, time, duration } = meeting;
-          return [...block, {
-            type: 'divider'
-          }, {
-            type: 'section',
-            text: {
-              type: 'mrkdwn',
-              text: `⏰ *${day}${ordinal} ${monthName} ${year} - ${time.hour}:${time.minutes} (${duration.minutes} mins)*\n📍 ${location} \n🗓 ${name} - ${description}`
-            },
-accessory: {
-			type: 'overflow',
-			options: [
-				{
-					text: {
-						type: 'plain_text',
-						text: 'View',
-						emoji: true
-					},
-					value: `${id}`
-				},
-        {
-					text: {
-						type: 'plain_text',
-						text: 'Set Reminder',
-						emoji: true
-					},
-					value: `${id}`
-				},
-				{
-					text: {
-						type: 'plain_text',
-						text: 'Delete',
-						emoji: true
-					},
-					value: `${id}`
-				}
-			]
-		}
-          }]
-        }, []);
+        const allMeetings = await Meetings.getAll(user);
+        console.log('display allMeetings', allMeetings);
         
+        const blocks = await Messages.getMeetingBlock(user);
+        // const data = Messages.getMeetingBlock(user);
+        
+//         allMeetings.reduce((block, meeting) => {
+//           console.log('meeting', meeting);
+//           const { id, name, description, location, day, ordinal, monthName, year, time, duration } = meeting;
+//           return [...block, {
+//             type: 'divider'
+//           }, {
+//             type: 'section',
+//             text: {
+//               type: 'mrkdwn',
+//               text: `⏰ *${day}${ordinal} ${monthName} ${year} - ${time.hour}:${time.minutes} (${duration.minutes} mins)*\n📍 ${location} \n🗓 ${name} - ${description}`
+//             },
+// accessory: {
+// 			type: 'overflow',
+// 			options: [
+// 				{
+// 					text: {
+// 						type: 'plain_text',
+// 						text: 'View',
+// 						emoji: true
+// 					},
+// 					value: `${id}`
+// 				},
+//         {
+// 					text: {
+// 						type: 'plain_text',
+// 						text: 'Set Reminder',
+// 						emoji: true
+// 					},
+// 					value: `${id}`
+// 				},
+// 				{
+// 					text: {
+// 						type: 'plain_text',
+// 						text: 'Delete',
+// 						emoji: true
+// 					},
+// 					value: `${id}`
+// 				},
+//         {
+// 					text: {
+// 						type: 'plain_text',
+// 						text: 'Leave',
+// 						emoji: true
+// 					},
+// 					value: `${id}`
+// 				}
+// 			]
+// 		}
+//           }]
+//         }, []);
         
         const meetings = allMeetings.map(({ id, name, description, location, day, ordinal, monthName, year, time, duration }) => ({
           type: 'section',
@@ -230,7 +251,7 @@ accessory: {
           channel,
           mrkdwn: true,
           text: '*Your Meetings:*',
-          blocks: _.flatten(data)
+          blocks: _.flatten(blocks)
         }).catch(console.error);
         res.send();
         break;

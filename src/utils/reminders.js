@@ -6,9 +6,10 @@ const web = require('../webClient');
 
 const store = require('../store')('reminders');
 
-const Reminders = {
+const Reminders= {
   add: async (data, post_at) => {
     await web.chat.scheduleMessage(data).then(({ channel, scheduled_message_id, message }) => {
+      console.log('Reminders add', data);
       const { user } = data;
       store.set(user, { ...data, scheduled_message_id, message });
     }).catch(console.error);
@@ -42,7 +43,8 @@ const Reminders = {
   },
   clear: async ({ user, channel }) => {
     console.log('clear', user, channel);
-    const reminders = await Reminders.get({ user, channel });
+    const reminders = await Reminders.getAll({ user, channel });
+    console.log('clear reminders', reminders);
     reminders.forEach(Reminders.remove);
   }
 }

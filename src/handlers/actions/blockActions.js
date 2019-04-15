@@ -3,6 +3,8 @@ const moment = require('moment');
 
 const web = require('../../webClient');
 
+const { Meetings } = require('../../utils');
+
 const Messages = require('../../messages');
 
 const scheduleStore = require('../../store')('schedule');
@@ -59,6 +61,19 @@ const blockActions = async (req, res) => {
       await web.chat.deleteScheduledMessage({ channel, scheduled_message_id });
       await scheduleStore.remove(scheduled_message_id);
       break;
+    }
+    case 'meeting_menu_options': {
+      const { selected_option: { value: meetingId, text: { text } } } = action;
+      res.send();
+      if (text == 'Leave') {
+        await Meetings.removeParticipant(meetingId, user);     
+        web.chat.postEphemeral({
+          user,
+          channel,
+          response_type: 'in_channel',
+          text: `You've successfully \`Left\` this meeting. Goodbye. 👋`
+        });
+      }
     }
     default:
       res.send();

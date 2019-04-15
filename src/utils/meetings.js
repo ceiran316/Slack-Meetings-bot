@@ -19,7 +19,7 @@ const Meetings = {
         title,
         location,
         description,
-        start: [year, month, day, hour-1, minutes],
+        start: [year, month, day, hour-1, parseInt(minutes)],
         duration,
         organizer
     });
@@ -38,12 +38,12 @@ const Meetings = {
       description,
       day,
       month,
-      start: [hourF, hourL, semi = ':', minuteF = 0, minuteL = 0],
+      start: [hourF = 0, hourL = 0, semi = ':', minuteF = 0, minuteL = 0],
       year = (new Date().getUTCFullYear()),
     } = details;
     
     const monthName = Meetings.getMonthName(month);
-    
+
     const meeting = {
         id: uuidv1(),
         name,
@@ -52,26 +52,24 @@ const Meetings = {
         ordinal: Meetings.getOrdinal(day),
         monthName,
         month: Meetings.getMonth(monthName),
-        year: parseInt(year),
+        year: parseInt(year, 10),
         time: {
-          hour: parseInt(`${hourF}${hourL}`),
-          minutes: parseInt(`${minuteF}${minuteL}`),
+          hour: parseInt(`${hourF}${hourL}`, 10),
+          minutes: `${minuteF}${minuteL}`,
         },
         organizer,
-        duration: { minutes: parseInt(duration) },
+        host: userId,
+        duration: { minutes: parseInt(duration, 10) },
         description,
-        participants: [userId]
+        participants: [userId],
     };
     
     const data =  {
-      ...meetingsStore[meeting.id],
       ...meeting,
       event: Meetings.createEvent(meeting),
       template: Meetings.createTemplate(meeting)
     };
-    
-    meetingsStore[meeting.id] = data;
-    
+
     await store.set(meeting.id, data);
     
     return data;
@@ -92,10 +90,10 @@ const Meetings = {
      return (monthAlpha || 'Invalid Month');
   },
   
-  getDay: day => parseInt((day[0] == 0) ? day[1] : day),
+  getDay: day => parseInt((day[0] == 0) ? day[1] : day, 10),
   
   getOrdinal: dayStr => {
-    const day = parseInt(dayStr);
+    const day = parseInt(dayStr, 10);
     let ordInd;
     if (day > 3 && day < 21) {
         ordInd ='th';
@@ -144,19 +142,27 @@ const Meetings = {
     console.log('createTemplate', template);
     return template;
   },
-  hasParticipant: (meetingId, userId) => {
-    return _.contains(meetingsStore[meetingId].participants, userId);
+  hasParticipant: async (meetingId, userId) => {
+    const meeting = await Meetings.get(meetingId);
+    console.log('hasParticipant', meeting);
+    return _.contains({ ...meeting }.participants, userId);
   },
-  addParticipant: (meetingId, userId) => {
-    meetingsStore[meetingId].participants = _.union(meetingsStore[meetingId].participants, [userId]);
+  addParticipant: async (meetingId, userId) => {
+    const meeting = await store.get(meetingId);
+    meeting.participants = _.union(meeting.participants, [userId]);
+    store.set(meetingId, meeting);
   },
-  removeParticipant: (meetingId, userId) => {
-    meetingsStore[meetingId].participants = _.without(meetingsStore[meetingId].participants, userId);
+  removeParticipant: async (meetingId, userId) => {
+    console.log('removeParticipant', meetingId, userId);
+    const meeting = await store.get(meetingId);
+    meeting.participants = _.without(meeting.participants, userId);
+    console.log('removeParticipant meeting', meeting);
+    await store.set(meetingId, meeting);
   },
   
   sendMeetingInvite: async (meetingId, userId) => {
       //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
-    const meeting = meetingsStore[meetingId];
+    const meeting = await store.get(meetingId);
     const { email } = await Users.getKeys(userId, 'email');
     console.log('sendMeetingInvite meeting', userId, email, meeting);
 
@@ -176,7 +182,7 @@ const Meetings = {
         console.log('ERROR Email Send', err);
       });
 
-      Meetings.addParticipant(meetingId, userId);
+      await Meetings.addParticipant(meetingId, userId);
 
       return true;
     }
@@ -186,9 +192,12 @@ const Meetings = {
     const meeting = await store.get(meetingId);
     return meeting;
   },
-  getAll: async (userId) => {
-    const allMeetings = await store.values();
-    return allMeetings;
+  getAll: async user => {
+    const allMeetings = await store.getAll();
+    console.log('getAll allMeetings', user, allMeetings);
+    const userMeetings = allMeetings.filter(({ participants }) => _.contains(participants, user));
+    console.log('getAll Users meetings', userMeetings);
+    return userMeetings;
   },
   remove: async meetingId => {
     await store.remove(meetingId);
