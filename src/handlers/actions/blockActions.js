@@ -19,30 +19,31 @@ const blockActions = async (req, res) => {
 
   switch(action.action_id) {
     case 'no_create_meeting': {
-      console.log('remove meeting');
-      res.send({
-        'response_type': 'ephemeral',
-        'text': '',
-        'replace_original': true,
-        'delete_original': true
-      });
-      // web.chat.delete({ channel, ts });
-      break;
-    }
-    case 'yes_create_meeting': {
-      console.log('OPEN MEETING DIALOG');
-      const { value } = action;
       res.send();
-      web.chat.delete({ channel, ts }).then(() => {
-        web.chat.postEphemeral({
-          channel,
-          user,
-          text: moment(value).format("dddd, MMMM Do YYYY")
-        });
-      });
+      console.log('remove meeting');
+      // res.send({
+      //   'response_type': 'ephemeral',
+      //   'text': '',
+      //   'replace_original': true,
+      //   'delete_original': true
+      // });
+      web.chat.delete({ channel, ts });
       break;
     }
-    case 'date_create_meeting' : {
+    // case 'yes_create_meeting': {
+    //   console.log('OPEN MEETING DIALOG');
+    //   const { value } = action;
+    //   res.send();
+    //   web.chat.delete({ channel, ts }).then(() => {
+    //     web.chat.postEphemeral({
+    //       channel,
+    //       user,
+    //       text: moment(value).format("dddd, MMMM Do YYYY")
+    //     });
+    //   });
+    //   break;
+    // }
+    case 'create_meeting_with_date' : {
       console.log('NEW DATE', action);
       const { selected_date } = action;
       const createMessage = Messages.selectCalendarDate(selected_date);
@@ -64,9 +65,9 @@ const blockActions = async (req, res) => {
     }
     case 'meeting_menu_options': {
       const { selected_option: { value: meetingId, text: { text } } } = action;
-      res.send();
       if (text == 'Leave') {
-        await Meetings.removeParticipant(meetingId, user);     
+        await Meetings.removeParticipant(meetingId, user);
+        // TODO Remove Reminders & Refactor these common function together
         web.chat.postEphemeral({
           user,
           channel,
@@ -74,9 +75,17 @@ const blockActions = async (req, res) => {
           text: `You've successfully \`Left\` this meeting. Goodbye. 👋`
         });
       }
+      if (text == 'Delete') {
+        web.chat.delete({
+          channel,
+          user,
+          ts
+        });
+      }
+      res.send();
+      break;
     }
     default:
-      res.send();
   }
 };
 

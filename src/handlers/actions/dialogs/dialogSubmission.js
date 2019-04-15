@@ -27,6 +27,8 @@ const dialogSubmission = async (req, res) => {
         res.send(); 
         
         const organizer = await Users.getKeys(userId, 'name', 'email');
+        
+        console.log('Meeting organizer', organizer);
 
         const meetingObject = await Meetings.createObject(userId, submission, organizer);
 

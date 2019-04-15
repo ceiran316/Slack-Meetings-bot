@@ -70,7 +70,7 @@ accessory: {
             },
             "accessory": {
               "type": "datepicker",
-              action_id: 'date_create_meeting',
+              action_id: 'create_meeting_with_date',
               initial_date: `${date}`,
               "placeholder": {
                 "type": "plain_text",
@@ -82,16 +82,18 @@ accessory: {
             "type": "divider"
           }, {
             "type": "actions",
-            "elements": [{
-                value: `${date}`,
-                type: 'button',
-                action_id: 'yes_create_meeting',
-                text: {
-                  type: 'plain_text',
-                  text: '🗓 Contiune',
-                  "emoji": true
-                },                    
-            }, {
+            "elements": [
+              //{
+            //     value: `${date}`,
+            //     type: 'button',
+            //     action_id: 'yes_create_meeting',
+            //     text: {
+            //       type: 'plain_text',
+            //       text: '🗓 Contiune',
+            //       "emoji": true
+            //     },                    
+            // },
+            {
               value: 'no',
               type: 'button',
               action_id: 'no_create_meeting',

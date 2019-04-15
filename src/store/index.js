@@ -23,12 +23,18 @@ class Store {
     const item = await this.storage.getItem(key);
     return item;
   }
-  
+
   async set(key, val) {
     console.log('store set', key, val);
-    const arr = await this.get(key);
-    console.log('store arr', arr);
-    return await this.storage.setItem(key, _.chain([arr, val]).compact().flatten().value());
+    const values = await this.get(key);
+    console.log('store set values', values);
+    let newValue;
+    if (_.isArray(values)) {
+      newValue = _.chain([values, val]).compact().flatten().value()
+    } else {
+      newValue = val;
+    }
+    return await this.storage.setItem(key, newValue);
   }
   
   async remove(key) {

@@ -4,6 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser')
 
 const { createEventAdapter } = require('@slack/events-api');
+
 const { authRedirectHandler, oAuthRedirectHandler } = require('./src/auth');
 const { errorEvent, linkEvent, messageEvent } = require('./src/events');
 const { actionsHandler, optionsHandler, commandsHandler } = require('./src/handlers');

@@ -36,6 +36,15 @@ const commands = async (req, res) => {
       }
       case 'getreminders':
       case 'getreminder': {
+        web.reminders.add({
+          text: 'This is a reminder',
+          time: moment().unix() + 100,
+          user
+        }).then(res => {
+          console.log('REMINDER', res);
+        }).catch(console.error);
+        res.send();
+        break;
         const allReminders = await Reminders.getAll({ user, channel });
         const data = allReminders.reduce((block, schedule) => {
           const { scheduled_message_id, text }  = schedule;

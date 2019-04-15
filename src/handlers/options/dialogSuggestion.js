@@ -77,9 +77,11 @@ const dialogSuggestions = (req, res) => {
             }], 
           value)
         }];
+
         return res.send({ option_groups });
       }
     }
+    
     default: {
       res.send();
     }

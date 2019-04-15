@@ -11,6 +11,7 @@ const Users = {
   },
   getUser: async userId => {
     let user = await store.get(userId);
+    console.log('getUser user', user);
     if(!user) {
       const { profile } = await web.users.profile.get({ user : userId});
       user = { ...profile, userId, name: profile.real_name };
@@ -27,7 +28,7 @@ const Users = {
     return _.pick(await Users.getUser(userId), keys);
   },
   getAll: async () => {
-    const allUsers = await store.values();
+    const allUsers = await store.getAll();
     return allUsers;
   },
   clear: async () => {
