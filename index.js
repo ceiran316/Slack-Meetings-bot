@@ -42,8 +42,4 @@ app.post('/options', optionsHandler);
 
 // Slack Incoming Events
 
-slackEvents.on('message', messageEvent);
-
-slackEvents.on('link_shared', linkEvent);
-
 slackEvents.on('error', errorEvent);
