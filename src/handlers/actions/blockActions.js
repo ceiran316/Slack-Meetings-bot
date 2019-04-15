@@ -1,8 +1,13 @@
 const queryStrings = require('query-string');
+const moment = require('moment');
 
 const web = require('../../webClient');
 
-const blockActions = (req, res) => {
+const Messages = require('../../messages');
+
+const scheduleStore = require('../../store')('schedule');
+
+const blockActions = async (req, res) => {
   const body = queryStrings.parse(req.body.toString());
   console.log('Received BLOCK ACTIONS', body);
   const payload = JSON.parse(body.payload);
@@ -13,65 +18,48 @@ const blockActions = (req, res) => {
   switch(action.action_id) {
     case 'no_create_meeting': {
       console.log('remove meeting');
-      web.chat.delete({
-        channel,
-        ts
+      res.send({
+        'response_type': 'ephemeral',
+        'text': '',
+        'replace_original': true,
+        'delete_original': true
       });
-      res.send();
+      // web.chat.delete({ channel, ts });
       break;
     }
     case 'yes_create_meeting': {
       console.log('OPEN MEETING DIALOG');
-      web.chat.delete({
-        channel,
-        ts
-      });
-      // OPEN Dialog
+      const { value } = action;
       res.send();
+      web.chat.delete({ channel, ts }).then(() => {
+        web.chat.postEphemeral({
+          channel,
+          user,
+          text: moment(value).format("dddd, MMMM Do YYYY")
+        });
+      });
       break;
     }
     case 'date_create_meeting' : {
-      
-      web.chat.postEphemeral({
-          user,
-          channel,
-          attachments: [{
-            color: '#3AA3E3',
-            blocks: [{
-              "type": "section",
-              "text": {
-                "type": "mrkdwn",
-                "text": "Would you like to create a :spiral_calendar_pad: *New Meeting*?"
-              }
-            }, {
-                "type": "divider"
-              }, {
-                "type": "actions",
-                "elements": [{
-                    value: 'yes',
-                    type: 'button',
-                    action_id: 'yes_create_meeting',
-                    text: {
-                      type: 'plain_text',
-                      text: '🗓 Contiune',
-                      "emoji": true
-                    },                    
-                }, {
-                  value: 'no',
-                  type: 'button',
-                  action_id: 'no_create_meeting',
-                  text: {
-                    type: 'plain_text',
-                    text: 'Cancel',
-                    "emoji": true
-                  }
-              }]
-            }]
-          }]
-        });
+      console.log('NEW DATE', action);
+      const { selected_date } = action;
+      const createMessage = Messages.selectCalendarDate(selected_date);
       res.send();
+      web.chat.update({
+        ts,
+        user,
+        channel,
+        ...createMessage
+      }).catch(console.error);
       break;
-    } 
+    }
+    case 'remove_scheduled_message': {
+      const { channel, scheduled_message_id } = JSON.parse(action.value);
+      res.send();
+      await web.chat.deleteScheduledMessage({ channel, scheduled_message_id });
+      await scheduleStore.remove(scheduled_message_id);
+      break;
+    }
     default:
       res.send();
   }

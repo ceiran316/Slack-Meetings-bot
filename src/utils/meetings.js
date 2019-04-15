@@ -8,6 +8,7 @@ const Users = require('./users');
 const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 const meetingsStore = {};
+const store = require('../store')('meetings');
 
 const Meetings = {
   createEvent: meeting => {
@@ -29,7 +30,7 @@ const Meetings = {
     return value;
   },
   
-  createObject: (userId, details, organizer) => {
+  createObject: async (userId, details, organizer) => {
     const {
       name,
       room: location,
@@ -62,14 +63,18 @@ const Meetings = {
         participants: [userId]
     };
     
-    meetingsStore[meeting.id] = {
+    const data =  {
       ...meetingsStore[meeting.id],
       ...meeting,
       event: Meetings.createEvent(meeting),
       template: Meetings.createTemplate(meeting)
     };
     
-    return meetingsStore[meeting.id];
+    meetingsStore[meeting.id] = data;
+    
+    await store.set(meeting.id, data);
+    
+    return data;
   },
   
   getMonth: month => (months.indexOf(month) + 1),
@@ -176,6 +181,20 @@ const Meetings = {
       return true;
     }
     return false;
+  },
+  get: async meetingId => {
+    const meeting = await store.get(meetingId);
+    return meeting;
+  },
+  getAll: async (userId) => {
+    const allMeetings = await store.values();
+    return allMeetings;
+  },
+  remove: async meetingId => {
+    await store.remove(meetingId);
+  },
+  clear: async () => {
+    await store.clear();
   }
 }
 

@@ -2,26 +2,36 @@ const _ = require('underscore');
 const web = require('../webClient');
 
 const usersStore = {};
+const store = require('../store')('users');
 
 const Users = {
-  has: userId => !!usersStore[userId],
+  has: async userId => {
+    let user = await store.get(userId);
+    return _.isEmpty(user);
+  },
   getUser: async userId => {
-    const user = usersStore[userId];
-    if(!Users.has(userId)) {
+    let user = await store.get(userId);
+    if(!user) {
       const { profile } = await web.users.profile.get({ user : userId});
-      usersStore[userId] = { ...profile, userId, name: profile.real_name };
+      user = { ...profile, userId, name: profile.real_name };
+      // TEMP FIX - As williams email address doesn't return for some reason.
+      if (userId === 'UDW87UF6U') {
+        user.email = 'holmes.william@gmail.com';
+      }
+      // ********************************************************************
+      await store.set(userId, user);
     }
-    console.log('Users getUser', usersStore[userId]);
-    // TEMP FIX - As my email address doesn't return for some reason.
-    if (userId === 'UDW87UF6U') {
-      usersStore[userId].email = 'holmes.william@gmail.com';
-    }
-    // ***
-    return usersStore[userId];
+    return user;
   },
   getKeys: async (userId, ...keys) => {
-    const user = await Users.getUser(userId);
-    return _.pick(user, keys);
+    return _.pick(await Users.getUser(userId), keys);
+  },
+  getAll: async () => {
+    const allUsers = await store.values();
+    return allUsers;
+  },
+  clear: async () => {
+    await store.clear();
   }
 }
 

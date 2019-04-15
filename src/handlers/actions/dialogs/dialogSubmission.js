@@ -1,7 +1,9 @@
 const isEmail = require('isemail');
 const queryStrings = require('query-string');
 const { uuidv1 } = require('uuid/v1');
+
 const web = require('../../../webClient');
+
 const { Email, Meetings, Users } = require('../../../utils');
 
 const nodemailer = require('nodemailer');
@@ -26,7 +28,7 @@ const dialogSubmission = async (req, res) => {
         
         const organizer = await Users.getKeys(userId, 'name', 'email');
 
-        const meetingObject = Meetings.createObject(userId, submission, organizer);
+        const meetingObject = await Meetings.createObject(userId, submission, organizer);
 
         const { id: meetingId, day, template } = meetingObject;
         
