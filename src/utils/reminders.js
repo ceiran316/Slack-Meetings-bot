@@ -149,7 +149,14 @@ const Reminders = {
                 accessory: {
                     type: 'overflow',
                     action_id: 'reminder_options',
-                    options: [
+                    options: [{
+                            text: {
+                                type: 'plain_text',
+                                text: 'Edit Reminder',
+                                emoji: true
+                            },
+                            value: JSON.stringify({ channel, scheduled_message_id })
+                        },
                         {
                             text: {
                                 type: 'plain_text',

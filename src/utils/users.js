@@ -19,6 +19,13 @@ const Users = {
       if (userId === 'UDW87UF6U') {
         user.email = 'holmes.william@gmail.com';
       }
+      if (userId === 'UJ07F504C') {
+        user.email = 'ceiran316@gmail.com';
+      }
+      if (userId === 'UJ1QFE804') {
+        user.email = 'x00132492@gmail.com';
+      }
+      
       // ********************************************************************
       await store.set(userId, user);
     }
