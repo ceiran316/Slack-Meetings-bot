@@ -8,25 +8,18 @@ const Messages = {
           console.log('meeting', meeting);
           const { id, name, description, location, day, ordinal, monthName, year, time, duration, host } = meeting;
           console.log('Is Host', host, user);
+          const descriptionText = description ? ` - ${description}` : '';
           return [...block, {
             type: 'divider'
           }, {
             type: 'section',
             text: {
               type: 'mrkdwn',
-              text: `⏰ *${day}${ordinal} ${monthName} ${year} - ${time.hour}:${time.minutes} (${duration.minutes} mins)*\n📍 ${location} \n🗓 ${name} - ${description}`
+              text: `🕐 *${day}${ordinal} ${monthName} ${year} - ${time.hour}:${time.minutes} (${duration.minutes} mins)*\n📍 ${location} \n🗓 ${name}${descriptionText}`
             },
 accessory: {
 			type: 'overflow',
 			options: [
-				{
-					text: {
-						type: 'plain_text',
-						text: 'View',
-						emoji: true
-					},
-					value: `${id}`
-				},
         {
 					text: {
 						type: 'plain_text',
@@ -52,8 +45,6 @@ accessory: {
         },
   selectCalendarDate: date => {
     return {
-      attachments: [{
-        color: '#3AA3E3',
         blocks: [{
           "type": "section",
           "text": {
@@ -80,29 +71,31 @@ accessory: {
             },
           }, {
             "type": "divider"
-          }, {
-            "type": "actions",
-            "elements": [
-              //{
-            //     value: `${date}`,
-            //     type: 'button',
-            //     action_id: 'yes_create_meeting',
-            //     text: {
-            //       type: 'plain_text',
-            //       text: '🗓 Contiune',
-            //       "emoji": true
-            //     },                    
-            // },
-            {
-              value: 'no',
-              type: 'button',
-              action_id: 'no_create_meeting',
-              text: {
-                type: 'plain_text',
-                text: 'Cancel',
-                "emoji": true
-              }
           }]
+    }
+  },
+  getSendInvite: ({ meetingId, pretext }) => {
+    return {
+      attachments: [{
+        color: '#39A3E3',
+        attachment_type: 'default',
+        callback_id: 'invite_others',
+        pretext,
+        actions: [{
+            name: `invite_users||${meetingId}`,
+            text: 'Invite Users',
+            type: 'select',
+            data_source: 'users'
+        }, {
+            name: `invite_channels||${meetingId}`,
+            text: 'Invite Channels',
+            type: 'select',
+            data_source: 'channels'
+        }, {
+            name: 'cancel_invite_others',
+            value: 'cancel_invite_others',
+            text: 'Cancel',
+            type: 'button'
         }]
       }]
     }

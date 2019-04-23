@@ -24,6 +24,7 @@ const Users = {
     }
     return user;
   },
+  get: async userId => Users.getUser(userId),
   getKeys: async (userId, ...keys) => {
     return _.pick(await Users.getUser(userId), keys);
   },

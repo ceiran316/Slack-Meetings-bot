@@ -3,11 +3,11 @@ const moment = require('moment');
 
 const web = require('../../webClient');
 
-const { Meetings } = require('../../utils');
+const { Reminders, Meetings } = require('../../utils');
 
 const Messages = require('../../messages');
 
-const scheduleStore = require('../../store')('schedule');
+const reminderStore = require('../../store')('reminders');
 
 const blockActions = async (req, res) => {
   const body = queryStrings.parse(req.body.toString());
@@ -27,7 +27,7 @@ const blockActions = async (req, res) => {
       //   'replace_original': true,
       //   'delete_original': true
       // });
-      web.chat.delete({ channel, ts });
+      // web.chat.delete({ channel, ts });
       break;
     }
     // case 'yes_create_meeting': {
@@ -46,25 +46,15 @@ const blockActions = async (req, res) => {
     case 'create_meeting_with_date' : {
       console.log('NEW DATE', action);
       const { selected_date } = action;
-      const createMessage = Messages.selectCalendarDate(selected_date);
-      res.send();
-      web.chat.update({
-        ts,
-        user,
-        channel,
-        ...createMessage
-      }).catch(console.error);
-      break;
-    }
-    case 'remove_scheduled_message': {
-      const { channel, scheduled_message_id } = JSON.parse(action.value);
-      res.send();
-      await web.chat.deleteScheduledMessage({ channel, scheduled_message_id });
-      await scheduleStore.remove(scheduled_message_id);
+      web.chat.delete({ channel, ts });
       break;
     }
     case 'meeting_menu_options': {
       const { selected_option: { value: meetingId, text: { text } } } = action;
+      if (text == 'Set Reminder') {
+        const meeting = await Meetings.get(meetingId);
+        console.log('meeting_menu_options Set Reminder', meetingId, meeting);
+      }
       if (text == 'Leave') {
         await Meetings.removeParticipant(meetingId, user);
         // TODO Remove Reminders & Refactor these common function together
@@ -85,7 +75,24 @@ const blockActions = async (req, res) => {
       res.send();
       break;
     }
+    case 'reminder_options': {
+      const { selected_option: { value, text: { text } } } = action;
+      
+      if (text === 'Remove Reminder') {
+        const { channel, scheduled_message_id } = JSON.parse(value);
+        const response = await Reminders.remove({ user, channel, scheduled_message_id });
+        web.chat.postEphemeral(response).catch(console.error);
+        res.send();
+        break;
+      }
+      
+      if (text === 'View Meeting') {
+      }
+      res.send();
+      break;
+    }
     default:
+      res.send();
   }
 };
 

@@ -1,6 +1,7 @@
 const uuidv1 = require('uuid/v1');
 const ics = require('ics');
 const _ = require('underscore');
+const moment = require('moment');
 
 const Email = require('./email');
 const Users = require('./users');
@@ -11,6 +12,12 @@ const meetingsStore = {};
 const store = require('../store')('meetings');
 
 const Meetings = {
+  getClosestStartTime: () => {
+    const time = 1000 * 60 * 30;
+    const date = new Date();
+    const rounded = new Date(date.getTime() + time - (date.getTime() % time))
+    return moment(rounded).add(1, 'hour').format('HH:mm');
+  },
   createEvent: meeting => {
     const { id: uid, name: title, location, description, year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
     console.log('createEvent', organizer);
@@ -62,12 +69,14 @@ const Meetings = {
         duration: { minutes: parseInt(duration, 10) },
         description,
         participants: [userId],
+        invites: [userId],
+        decline: []
     };
     
     const data =  {
       ...meeting,
       event: Meetings.createEvent(meeting),
-      template: Meetings.createTemplate(meeting)
+      template: Meetings.createTemplate(userId, meeting)
     };
 
     await store.set(meeting.id, data);
@@ -119,12 +128,14 @@ const Meetings = {
       }
   },
   
-  createTemplate: meeting => {
+  createTemplate: (user, meeting) => {
     const {
+      id: meetingId,
       name,
       location,
       day,
       ordinal,
+      month,
       monthName,
       year,
       time: {
@@ -134,13 +145,74 @@ const Meetings = {
       duration: { minutes: durationMinutes },
       description
     } = meeting;
-
-    let template = `*${name}*\n:round_pushpin:\t${location}\n:spiral_calendar_pad:\t${day}${ordinal} ${monthName} ${year}\n:clock3:\t${hour}:${minutes}\n:hourglass_flowing_sand:\t${durationMinutes}`;
-    if (description) {
-      template += `\n:memo:\t${description}`
+        
+    console.log('createTemplate meeting', meeting);
+        
+    const startFriendlyTime = moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).format('dddd, MMMM Do YYYY, HH:mm');
+    
+    const fields = [{
+      title: `📅 ${startFriendlyTime}`,
+      short: false
+    }, {
+      title: `📍 ${location}`,
+      short: false
+    }, {
+      title: `🕐 ${durationMinutes} minutes`,
+      short: false
+    }];
+    
+    if(!_.isEmpty(description)) {
+      fields.push({
+        title: `📝 ${description}`,
+        short: false
+      });
     }
-    console.log('createTemplate', template);
+    
+    const template = {
+      attachments: [{
+        pretext: `<@${user}> has created a Meeting Event`,
+        callback_id: 'meeting_accept_buttons',
+        color: '#3AA3E3',
+        attachment_type: 'default',
+        title: name,
+        fields,
+        thumb_url: 'https://img.icons8.com/office/80/000000/overtime.png',
+        footer_icon: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
+        footer: 'Add to Calendar',
+        actions: [{
+            name: 'accept_meeting',
+            value: `${meetingId}`,
+            style: 'primary',
+            text: 'Accept',
+            type: 'button'                      
+        }, {
+            name: 'decline_meeting',
+            value: `${meetingId}`,
+            text: 'Decline',
+            type: 'button',
+            style: 'danger',
+        }, {
+            name: 'invite_to_meeting',
+            value: `${meetingId}`,
+            text: 'Invite Others',
+            type: 'button'
+        }]
+      }]
+    };
+
     return template;
+  },
+  hasStarted: async (meetingId) => {
+    const meeting = await Meetings.get(meetingId);
+    const { day, month, year, time: { hour, minutes }, duration: { minutes: durationMinutes } } = meeting;
+    console.log(moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).format('dddd, MMMM Do YYYY, HH:mm'));
+    console.log(moment().add(1, 'hour').format('dddd, MMMM Do YYYY, HH:mm'));
+    return moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).isBefore(moment().add(1, 'hour'));
+  },
+  hasEnded: async (meetingId) => {
+    const meeting = await Meetings.get(meetingId);
+    const { day, month, year, time: { hour, minutes }, duration: { minutes: durationMinutes } } = meeting;
+    return moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).add(durationMinutes, 'minutes').isBefore(moment().add(1, 'hour'));
   },
   hasParticipant: async (meetingId, userId) => {
     const meeting = await Meetings.get(meetingId);
@@ -150,6 +222,7 @@ const Meetings = {
   addParticipant: async (meetingId, userId) => {
     const meeting = await store.get(meetingId);
     meeting.participants = _.union(meeting.participants, [userId]);
+    await Meetings.removeDecline(meetingId, userId);
     store.set(meetingId, meeting);
   },
   removeParticipant: async (meetingId, userId) => {
@@ -168,7 +241,7 @@ const Meetings = {
 
     if(email && meeting) {
       Email.send({
-        to: [email, 'ceiran316@gmail.com'], //'ceiran316@gmail.com','ceiran316@live.com'// list of receivers
+        to: [email], // list of receivers
         subject: `Meeting Invite: ${meeting.name}`, // Subject line
         html: `<p>${meeting.description}</p>`,
         icalEvent: {
@@ -194,16 +267,41 @@ const Meetings = {
   },
   getAll: async user => {
     const allMeetings = await store.getAll();
-    console.log('getAll allMeetings', user, allMeetings);
     const userMeetings = allMeetings.filter(({ participants }) => _.contains(participants, user));
-    console.log('getAll Users meetings', userMeetings);
-    return userMeetings;
+    const meetings = await Promise.all(_.filter(userMeetings, async ({ id }) => {
+      const hasEnded = await Meetings.hasEnded(id);
+      const hasStarted = await Meetings.hasStarted(id);
+      if (hasEnded) {
+        await Meetings.remove(id);
+      }
+      return (hasStarted || hasEnded);
+    }));
+    console.log('USER MEERTINGS', meetings);
+    return meetings;
   },
   remove: async meetingId => {
     await store.remove(meetingId);
   },
   clear: async () => {
     await store.clear();
+  },
+  addDecline: async (meetingId, userId) => {
+    const meeting = await store.get(meetingId);
+    await store.set(meetingId, { ...meeting, decline: _.union(meeting.decline, [userId]) });
+  },
+  removeDecline: async (meetingId, userId) => {
+    const meeting = await store.get(meetingId);
+    meeting.decline = _.without(meeting.decline, userId);
+    await store.set(meetingId, meeting);
+  },
+  hasInvite: async (meetingId, id) => {
+    const meeting = await store.get(meetingId);
+    console.log('meeting.invites', meeting.invites);
+    return _.chain([meeting.invites]).flatten().includes(id).value();
+  },
+  addInvite: async (meetingId, id) => {
+    const meeting = await store.get(meetingId);
+    await store.set(meetingId, { ...meeting, invites: _.union(meeting.invites, [id]) });
   }
 }
 

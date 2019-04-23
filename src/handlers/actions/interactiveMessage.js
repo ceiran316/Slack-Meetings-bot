@@ -1,7 +1,7 @@
 const _ = require('underscore');
 const queryStrings = require('query-string');
 
-const {  createButtons, updateButtons, deleteButtons, readButtons, meetingButtons } = require('./interactive')
+const {  createButtons, updateButtons, deleteButtons, readButtons, meetingButtons, setReminders } = require('./interactive')
 
 const interactiveMessage = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -27,8 +27,14 @@ const interactiveMessage = (req, res) => {
             readButtons(req, res);
             break;
         }
+        case (callback_id.match(/^invite_others/) || {}).input:
         case 'meeting_accept_buttons': {
             meetingButtons(req, res);
+            break;
+        }
+        case 'add_reminder_action':
+        case 'set_reminder_button': {
+            setReminders(req, res);
             break;
         }
         default:

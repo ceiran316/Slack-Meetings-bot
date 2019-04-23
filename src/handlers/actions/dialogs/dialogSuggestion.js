@@ -1,32 +1,19 @@
 const queryStrings = require('query-string');
+const _ = require('underscore');
 
 const dialogSuggestion = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
     const payload = JSON.parse(body.payload);
-    const { callback_id } = payload;
+    const { submission, callback_id } = payload;
 
     console.log('dialogSuggestion -> callback_id', callback_id);
 
-    res.send();
-
     switch(callback_id) {
-        case 'meeting': {
-          const { name } = payload;
-          console.log('NAME', name);
-          if (location === 'Demo Room') {
-            return res.send({
-              errors: [{
-                name: 'room',
-                error: "Room not available"
-              }]
-
-            });
-            break;
-          }
-        
-        res.send();
-        }
+      case 'create_meeting': {
+        //
+      }
       default:
+        res.send();
     }
   };
 

@@ -1,7 +1,54 @@
 const queryStrings = require('query-string');
+const moment = require('moment');
+const _ = require('underscore');
 
 const web = require('../../../webClient');
 
+const { Meetings } = require('../../../utils');
+
+const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const locations = ['Demo Room','Board Room','Training Room','Seminar Room', 'Conference Room'];
+const durations = [15, 30, 45, 60, 90, 120];
+
+const getMonths = () => {
+  return months.map((month, index) => ({ label: month, value: (index + 1) }));
+}
+
+const getStartTimes = () => {
+  const quarterHours = ['00', '15', '30', '45'];
+  const times = [];
+  for(var i = 0; i < 24; i++){
+    for(var j = 0; j < 4; j++){
+      const value = `${i}:${quarterHours[j]}`;
+      times.push({ label :value, value });
+    }
+  }
+  return times;
+}
+
+const getDays = () => {
+  return _.times(31, day => ({ label : (day+1), value: (day+1) }));
+}
+
+const getYears = () => {
+  const thisYear = (new Date()).getUTCFullYear();
+  const nextYear = thisYear + 1;
+  return [{
+    label: thisYear,
+    value: thisYear
+    },{
+      label: nextYear,
+      value: nextYear
+    }];
+}
+
+const getLocations  = () => {
+  return locations.map(location => ({ label: location, value: location }))
+}
+
+const getDurations = () => {
+    return durations.map(duration => ({ label: `${duration} mins`, value: duration }))
+}
 
 const buttonsTest = (req, res) => {
     const body = queryStrings.parse(req.body.toString());
@@ -25,11 +72,11 @@ const buttonsTest = (req, res) => {
     });
   
   switch(action.value) {
-    case 'yes': {
+    case 'yes_create_meeting': {
       web.dialog.open({
         trigger_id,
         dialog: {
-            callback_id: 'meeting',
+            callback_id: 'create_meeting',
             title: 'Create Meeting',
             submit_label: 'Send',
             notify_on_cancel: true,
@@ -45,37 +92,37 @@ const buttonsTest = (req, res) => {
                 name: 'room',
                 placeholder: 'Choose location',
                 type: 'select',
-                data_source: 'external',
+                options: getLocations()
             }, {
                 label: 'Day',
                 name: 'day',
-                placeholder: 'DD',
-                type: 'text',
-                hint: 'eg. 01 or 21'
-            },{
+                value: moment().format('D'),
+                type: 'select',
+                options: getDays()
+            }, {
                 label: 'Month',
                 name: 'month',
-                placeholder: 'MM',
-                type: 'text',
-                hint: 'eg. Jan/January/01'
+                value: moment().format('M'),
+                type: 'select',
+                options: getMonths()
             }, {
                 label: 'Year',
                 name: 'year',
-                placeholder: 'Choose year',
+                value: (new Date()).getUTCFullYear(),
                 type: 'select',
-                data_source: 'external'
+                options: getYears()
             },{
                 label: 'Start Time',
                 name: 'start',
-                placeholder: 'hh:mm',
-                type: 'text',
-                hint: 'eg. 09:00 / 13:00 (24hr)'
+                value: Meetings.getClosestStartTime(),
+                type: 'select',
+                options: getStartTimes()
             },{
                 label: 'Meeting Duration',
                 name: 'duration',
-                placeholder: 'Choose meeting duration',
+                value: '60',
                 type: 'select',
-                data_source: 'external'
+                options: getDurations()
             },{
                 label: 'Details',
                 name: 'description',
@@ -83,7 +130,7 @@ const buttonsTest = (req, res) => {
                 type: 'textarea',
                 hint: 'Meeting notes, Pizza/cake after'
             }]
-          } 
+          }
       });
       break;
     }
