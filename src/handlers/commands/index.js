@@ -24,49 +24,39 @@ const commands = async (req, res) => {
     } = body;
 
     console.log('TCL: commands -> text', text);
+
     switch (text) {
+      // case 'clear meetings': {
+      //   await Meetings.clear({ user, channel });
+      //   res.send();
+      //   break;
+      // }
+      // case 'clear reminders': {
+      //   await Reminders.clear({ user, channel });
+      //   res.send();
+      //   break;
+      // }
+      // case 'clear users': {
+      //   await Users.clear();
+      //   res.send();
+      //   break;
+      // }
         case 'reminders':
         case 'get reminders':
         case 'get reminder':
         case 'getreminders':
         case 'getreminder':
+        case 'list reminders':
             {
                 const response = await Reminders.getAll({ user, channel });
                 web.chat.postEphemeral(response).catch(console.error);
                 res.send();
                 break;
             }
-//         case 'clear':
-//             {
-//                 res.send();
-
-//                 await Users.clear();
-//                 await Meetings.clear();
-//                 await Reminders.clear({
-//                     user,
-//                     channel
-//                 });
-
-//                 web.chat.postEphemeral({
-//                     user,
-//                     channel,
-//                     text: 'Cleared All your Stores: Done 👍'
-//                 }).catch(console.error);
-//                 break;
-//             }
         case 'create':
-            {
-                const createMessage = Messages.selectCalendarDate((new Date()).toISOString().split('T')[0]);
-                web.chat.postEphemeral({
-                    user,
-                    channel,
-                    ...createMessage
-                }).catch(console.error);
-                res.send();
-                break;
-            }
         case 'add':
         case 'new':
+        case 'new meeting':
             {
                 web.chat.postEphemeral({
                     user,
@@ -80,12 +70,12 @@ const commands = async (req, res) => {
                             name: 'decision',
                             value: 'yes_create_meeting',
                             style: 'primary',
-                            text: 'Yes',
+                            text: 'Create Meeting',
                             type: 'button'
                         }, {
                             name: 'decision',
                             value: 'no',
-                            text: 'No',
+                            text: 'Cancel',
                             type: 'button',
                             style: 'danger',
                         }]
@@ -94,55 +84,26 @@ const commands = async (req, res) => {
                 res.send();
                 break;
             }
-      case 'meetings':
-      case 'list':
-        case 'display':
+        case 'list':
+        case 'meetings':
+        case 'get meetings':
+        case 'get meeting':
+        case 'getmeetings':
+        case 'getmeeting':
+        case 'list meetings':
             {
-                const allMeetings = await Meetings.getAll(user);
-
-              if (_.isEmpty(allMeetings)) {
-                web.chat.postEphemeral({
+              const data = await Messages.getAllMeetings(user);
+              web.chat.postEphemeral({
                   user,
                   channel,
-                  attachments: [{
-                    text: '📅 You `dont` have any meetings scheduled 👎',
-                    color: '#3AA3E3',
-                    attachment_type: 'default',
-                    callback_id: 'create_buttons',
-                    actions: [{
-                        name: 'decision',
-                        value: 'yes_create_meeting',
-                        style: 'primary',
-                        text: 'Create Meeting',
-                        type: 'button'
-                    }]
-                  }]
-                });
-            }
-                const blocks = await Messages.getMeetingBlock(user);
-              
-              // #F9CA65
-                
-                web.chat.postEphemeral({
-                    user,
-                    channel,
-                    mrkdwn: true,
-                    blocks: [	{
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": `You have *${allMeetings.length}* meeting${allMeetings.length > 1 ? 's' : ''}`
-                      }
-                    },
-                    ..._.flatten(blocks)
-                    ]
-                }).catch(console.error);
-                res.send();
-                break;
+                  ...data
+              }).catch(console.error);
+              res.send();
+              break;
             }
         default:
             {
-                res.send('You can use the slash command followed by `new`, `create`, `display`, `reminders`');
+                res.send('You can use the slash command followed by `new`, `create`, `list`, `meetings`, `reminders`');
             }
     }
 }

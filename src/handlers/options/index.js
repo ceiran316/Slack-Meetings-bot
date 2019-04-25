@@ -7,7 +7,7 @@ const options = (req, res) => {
     console.log('Received OPTIONS CALLBACK', body);
     const payload = JSON.parse(body.payload);
     const { type } = payload;
-  console.log('OPTIONS type', type);
+    console.log('OPTIONS type', type);
     switch(type) {
         case 'dialog_suggestion': {
             return dialogSuggestion(req, res);

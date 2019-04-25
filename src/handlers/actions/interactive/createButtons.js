@@ -19,8 +19,9 @@ const getStartTimes = () => {
   const times = [];
   for(var i = 0; i < 24; i++){
     for(var j = 0; j < 4; j++){
-      const value = `${i}:${quarterHours[j]}`;
-      times.push({ label :value, value });
+      const label = `${i}:${quarterHours[j]}`;
+      const value = `${String(i).padStart(2, '0')}:${quarterHours[j]}`;
+      times.push({ label, value });
     }
   }
   return times;

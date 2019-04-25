@@ -18,7 +18,7 @@ const isMeetingStillValid = async (payload, meetingId) => {
     web.chat.postEphemeral({
       user,
       channel,
-      text: `👎 The meeting may have already \`ended\` or been \`removed\``
+      text: `📅 The meeting may have already \`ended\` or been \`removed\` 👎`
     });
     return false
   }
@@ -82,7 +82,7 @@ const buttonsTest = async (req, res) => {
             channel,
             response_type: 'in_channel',
             attachments: [{
-                text: `You're already a participant in this meeting. 👍`,
+                text: `You're \`already\` a participant in this meeting. 👍`,
                 callback_id: 'set_reminder_button',
                 color: '#3AA3E3',
                 attachment_type: 'default',
@@ -159,13 +159,14 @@ const buttonsTest = async (req, res) => {
             user,
             channel,
             response_type: 'in_channel',
-            text: `You weren't participating in this meeting anyway. 👍`
+            text: `You \`were not\` participating in this meeting anyway. 👍`
           });
           res.send();
           break;
         }
         
         await Meetings.removeParticipant(meetingId, user);
+        await Reminders.removeParticipantReminders({ meetingId, user });
         
         web.chat.postEphemeral({
           user,
@@ -173,6 +174,17 @@ const buttonsTest = async (req, res) => {
           response_type: 'in_channel',
           text: `You've successfully \`declined\` this meeting. Thanks. 👍`
         });
+        res.send();
+        break;
+      }
+      case "view_all_meetings" : {
+        console.log('view_all_meetings', action.value);
+        const data = await Messages.getAllMeetings(action.value);
+        web.chat.postEphemeral({
+            user,
+            channel,
+            ...data
+        }).catch(console.error);
         res.send();
         break;
       }
@@ -221,7 +233,7 @@ const buttonsTest = async (req, res) => {
         const { userId, bot_id } = await Users.get(value);
         
         if (bot_id) {
-          const template = Messages.getSendInvite({ meetingId, pretext: `<@${value}> cannot be added to this meeting 👎` });
+          const template = Messages.getSendInvite({ meetingId, pretext: `<@${value}> \`cannot\` be added to this meeting 👎` });
           res.send({
             'response_type': 'ephemeral',
             ...template,
@@ -232,11 +244,24 @@ const buttonsTest = async (req, res) => {
         }
         
         const meeting = await Meetings.get(meetingId);
-        const hasUserAlreadyBeenInvited = await Meetings.hasInvite(meetingId, value);
         
-        if (hasUserAlreadyBeenInvited) {
+        const isUserAlreadyAParticipant = await Meetings.hasParticipant(meetingId, value);
+        if (isUserAlreadyAParticipant) {
           const name = _.isEqual(userId, value) ? 'You are' : `<@${value}> is`;
-          const template = Messages.getSendInvite({ meetingId, pretext: `${name} already a participant in this meeting 👎` });
+          const template = Messages.getSendInvite({ meetingId, pretext: `${name} \`already\` participating in this meeting 👍` });
+          res.send({
+            'response_type': 'ephemeral',
+            ...template,
+            'replace_original': true,
+            'delete_original': false
+          });
+          break;
+        }
+        
+        const hasUserAlreadyBeenInvited = await Meetings.hasInvite(meetingId, value);
+        if (hasUserAlreadyBeenInvited) {
+          const name = _.isEqual(userId, value) ? 'You have' : `<@${value}> has`;
+          const template = Messages.getSendInvite({ meetingId, pretext: `${name} \`already\` been sent an invite for this meeting 👍` });
           res.send({
             'response_type': 'ephemeral',
             ...template,
@@ -248,7 +273,7 @@ const buttonsTest = async (req, res) => {
         
         await Meetings.addInvite(meetingId, value);
         
-        const template = Messages.getSendInvite({ meetingId, pretext: `A meeting invite has been sent to <@${value}> 👍` });
+        const template = Messages.getSendInvite({ meetingId, pretext: `A meeting invite has been \`sent\` to <@${value}> 👍` });
         res.send({
           'response_type': 'ephemeral',
           ...template,
@@ -278,7 +303,7 @@ const buttonsTest = async (req, res) => {
         const hasUserAlreadyBeenInvited = await Meetings.hasInvite(meetingId, value);
         
         if (hasUserAlreadyBeenInvited) {
-          const template = Messages.getSendInvite({ meetingId, pretext: `<#${value}> has already been sent an invite for this meeting 👎` });
+          const template = Messages.getSendInvite({ meetingId, pretext: `<#${value}> has \`already\` been sent an invite for this meeting 👎` });
           res.send({
             'response_type': 'ephemeral',
             ...template,
@@ -290,7 +315,7 @@ const buttonsTest = async (req, res) => {
         
         await Meetings.addInvite(meetingId, value);
         
-        const template = Messages.getSendInvite({ meetingId, pretext: `A meeting invite has been sent to <#${value}> 👍` });
+        const template = Messages.getSendInvite({ meetingId, pretext: `A meeting invite has been \`sent\` to <#${value}> 👍` });
         res.send({
           'response_type': 'ephemeral',
           ...template,

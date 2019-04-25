@@ -12,10 +12,15 @@ const { bot } = require('../constants');
 const store = require('../store')('reminders');
 
 const Reminders = {
+    getReminderValues: () => {
+      const reminders = [5,10,15,20,30,60];
+      return reminders.map(reminder => ({ label: `${reminder} mins`, value: reminder }));
+    },
     add: async ({
         user,
         channel,
         meetingId,
+        reminderName,
         reminderTime
     }) => {
       const meeting = await Meetings.get(meetingId);
@@ -23,15 +28,20 @@ const Reminders = {
       const { day, month, year, time: { hour, minutes } } = meeting;
       
       const meetingWhen = moment(`${year}-${month}-${day} ${hour}:${minutes}`);
-      const reminderWhen = meetingWhen.subtract(parseInt(reminderTime, 10), 'minutes');
+      const reminderWhen = moment(meetingWhen).subtract(parseInt(reminderTime, 10), 'minutes');
       const post_at = (reminderWhen.unix() - 3600);
 
         const friendlyMeetingDate = meetingWhen.format('dddd, MMMM Do YYYY, HH:mm');
         const friendlyReminderDate = reminderWhen.format('dddd, MMMM Do YYYY, HH:mm');
       
-        const text = `*You have a Meeting*\n🕐 ${friendlyMeetingDate}\n🗓 ${meeting.name}`;
+        let alertPreText = `*ALERT* *Reminder:* \`${reminderName}\` - (${reminderTime} mins before)`;
+        let alertText = `\n⏰ ${friendlyMeetingDate}\n🗓 ${meeting.name}`;
+      
+        let text = `*Reminder:* \`${reminderName}\` - (${reminderTime} mins before)\n🕐 ${friendlyReminderDate}\n📅  ${meeting.name}`;
+        
         if(!_.isEmpty(meeting.description)) {
           text += `\n📝 ${meeting.description}`;
+          alertText += `\n📝 ${meeting.description}`;
         }
         
         console.log('channel', channel);
@@ -40,8 +50,10 @@ const Reminders = {
             user,
             channel,
             post_at,
+            as_user: false,
             attachments: [{
-              text: `⏰ *ALERT* ${text}`,
+              pretext: alertPreText,
+              text: alertText,
               color: '#ffbf00',
               attachment_type: 'default',
             }]
@@ -49,17 +61,22 @@ const Reminders = {
             scheduled_message_id,
             message
         }) => {
+          console.log('scheduleMessage response', user, scheduled_message_id, message);
             await store.update(user, [{
                 scheduled_message_id,
                 channel,
                 message,
-                text: `⏰ ${text}`
+                text: `⏰ ${text}`,
+                reminderName,
+                reminderTime,
+                meetingId,
+                order: reminderWhen.valueOf()
             }]);
             return {
               user,
               channel,
               attachments: [{
-                text: `👍 Meeting Reminder Scheduled\n\n⏰ *${friendlyReminderDate}*`,
+                pretext: `👍 Meeting Reminder \`${reminderName}\` Scheduled\n\n⏰ *${friendlyReminderDate}*`,
                 color: '#3AA3E3',
                 attachment_type: 'default',
                 callback_id: 'add_reminder_action',
@@ -83,6 +100,7 @@ const Reminders = {
               }],
             };
         }).catch(err => {
+          console.error(err);
           const { data: { error } } = err;
           if (error === 'time_in_past') {
             console.log('error time in past', user, channel);
@@ -105,7 +123,7 @@ const Reminders = {
         channel
     }) => {
       const allSchedules = await store.get(user);
-      return _.where(allSchedules, { scheduled_message_id, channel });
+      return _.chain(allSchedules).where({ scheduled_message_id, channel }).first().value();
     },
     getAll: async ({
         user,
@@ -125,7 +143,7 @@ const Reminders = {
         } else {
           allSchedules = await store.get(user);
         }
-
+      
         const allReminders = _.filter(allSchedules, ({ scheduled_message_id }) => allSheduledMessages.includes(scheduled_message_id));
 
         if (_.isEmpty(allReminders)) {
@@ -134,11 +152,25 @@ const Reminders = {
             user,
             channel,
             mrkdwn: true,
-            text: '⏰ You `do not` have any Reminders set 👎'
+            attachments: [{
+              pretext: '⏰ You `do not` have any Reminders 👎',
+              callback_id: 'list_meetings',
+              color: '#3AA3E3',
+              attachment_type: 'default',
+              actions: [{
+                  name: 'view_all_meetings',
+                  value: user,
+                  style: 'primary',
+                  text: 'View All Meetings',
+                  type: 'button'
+              }]
+            }]
           };
         }
+      
+      console.log('allReminders', allReminders);
 
-        const blocks = allReminders.reduce((block, { scheduled_message_id, text }) => {
+        const blocks = _.chain(allReminders).sortBy('order').reduce((block, { scheduled_message_id, text, reminderTime }) => {
 
             return [...block, {
                 type: 'section',
@@ -160,7 +192,7 @@ const Reminders = {
                         {
                             text: {
                                 type: 'plain_text',
-                                text: 'Remove Reminder',
+                                text: 'Delete Reminder',
                                 emoji: true
                             },
                             value: JSON.stringify({ channel, scheduled_message_id })
@@ -178,7 +210,7 @@ const Reminders = {
               }
             }, {
                 type: 'divider'
-            }]);
+            }]).value();
 
         return {
             user,
@@ -196,8 +228,14 @@ const Reminders = {
         channel,
         scheduled_message_id
     }) => {
+      
+      console.log('remove', user,
+            channel,
+            scheduled_message_id);
         
-      const hasReminder = await Reminders.get({ user, channel, scheduled_message_id });
+      const reminder = await Reminders.get({ user, channel, scheduled_message_id });
+      
+      console.log('remove reminder', reminder);
         
       await web.chat.deleteScheduledMessage({
             user,
@@ -205,12 +243,12 @@ const Reminders = {
             scheduled_message_id
         }).catch(console.error);
 
-        if(_.isEmpty(hasReminder)) {
+        if(_.isEmpty(reminder)) {
             return {
               user,
               channel,
               attachments: [{
-                text: '⏰ Reminder was already `deleted` 👍',
+                pretext: `⏰ Reminder was already \`deleted\` 👍`,
                 color: '#3AA3E3',
                 attachment_type: 'default',
                 callback_id: 'add_reminder_action',
@@ -231,18 +269,52 @@ const Reminders = {
           user,
           channel,
           attachments: [{
-            text: '⏰ Reminder Deleted 👍',
-            color: '#E01E5A',
-            attachment_type: 'default'
+            pretext: `⏰ Reminder \`${reminder.reminderName}\` was Deleted 👍`,
+            color: '#3AA3E3',
+            attachment_type: 'default',
+            callback_id: 'add_reminder_action',
+            actions: [{
+              name: 'view_reminders',
+              text: 'View All Reminders',
+              type: 'button',
+              value: JSON.stringify({ scheduled_message_id, channel }),
+            }]
           }],
-        }
+        };
     },
-    clear: async ({
-        user,
-        channel
-    }) => {
-      store.clear();
+  update: async ({ scheduled_message_id, user, channel, reminderName, reminderTime, meetingId }) => {
+    console.log('update reminder', scheduled_message_id, user, channel, reminderName, reminderTime, meetingId);
+    await Reminders.remove({ user, channel, scheduled_message_id });
+    console.log('removed');
+    const newReminder = await Reminders.add({ user, channel, meetingId, reminderName, reminderTime });
+    console.log('update reminder newReminder', newReminder); 
+    return newReminder;
+  },
+  removeParticipantReminders: async ({ meetingId, user }) => {
+    console.log('removeParticipantReminders', meetingId, user)
+    const reminders = await store.get(user);
+    console.log('removeParticipantReminders reminders', reminders);
+    if (!_.isEmpty(reminders)) {
+      reminders.forEach(async ({
+          channel,
+          scheduled_message_id,
+          meetingId: id
+      }) => {
+        console.log('removeParticipantReminders id', id, meetingId);
+        if(id === meetingId) {
+          return await Reminders.remove({ user, scheduled_message_id, channel });
+        }
+      });
     }
+  },
+  removeMeetingReminders: async (meetingId) => {
+    const meeting = await Meetings.get(meetingId);
+    if(!_.isEmpty(meeting)) {
+      const { participants } = meeting;
+      participants.forEach(async user => Reminders.removeParticipantReminders({ meetingId, user }));
+    }
+  },
+  clear: async ({ user, channel }) => { store.clear(); }
 }
 
 module.exports = Reminders;

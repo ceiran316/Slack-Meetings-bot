@@ -9,9 +9,6 @@ const dialogSuggestion = (req, res) => {
     console.log('dialogSuggestion -> callback_id', callback_id);
 
     switch(callback_id) {
-      case 'create_meeting': {
-        //
-      }
       default:
         res.send();
     }

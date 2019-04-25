@@ -1,4 +1,3 @@
-const isEmail = require('isemail');
 const queryStrings = require('query-string');
 const { uuidv1 } = require('uuid/v1');
 const moment = require('moment');
@@ -73,15 +72,35 @@ const dialogSubmission = async (req, res) => {
         
         const organizer = await Users.getKeys(user, 'name', 'email');
         const meetingObject = await Meetings.createObject(user, submission, organizer);
-        const { id: meetingId, template } = meetingObject;
+        const { id: meetingId, template, name } = meetingObject;
 
-        web.chat.postMessage({
-          channel,
-          ...template
-        });
-        
+        await web.chat.postMessage({ channel, ...template });
         await Meetings.addInvite(meetingId, channel);
         await Meetings.sendMeetingInvite(meetingId, user);
+        
+        web.chat.postEphemeral({
+            user,
+            channel,
+            response_type: 'in_channel',
+            attachments: [{
+                text: `⏰ Would you like to \`set\` a reminder for *${name}*?`,
+                callback_id: 'set_reminder_button',
+                color: '#3AA3E3',
+                attachment_type: 'default',
+                actions: [{
+                    name: 'set_meeting_reminder',
+                    value: meetingId,
+                    style: 'primary',
+                    text: 'Set Reminder',
+                    type: 'button'                      
+                }, {
+                name: 'view_all_meetings',
+                value: user,
+                text: 'View All Meetings',
+                type: 'button'
+              }]
+            }]
+          })
         
         break;
       }
@@ -89,7 +108,15 @@ const dialogSubmission = async (req, res) => {
         const { reminder_label, reminder_time } = submission;
         const meeting = await Meetings.get(state);
         const { id: meetingId, day, month, year, time: { hour, minutes } } = meeting;
-        const response = await Reminders.add({ user, channel, meetingId: state, reminderTime : reminder_time });
+        const response = await Reminders.add({ user, channel, meetingId: state, reminderName: reminder_label, reminderTime : reminder_time });
+        web.chat.postEphemeral(response).catch(console.error);
+        res.send();
+        break;
+      }
+      case 'edit_meeting_reminder': {
+        const { scheduled_message_id, user, channel, meetingId } = JSON.parse(state);
+        const { reminder_label: reminderName, reminder_time: reminderTime } = submission;
+        const response = await Reminders.update({ scheduled_message_id, user, channel, reminderName, reminderTime, meetingId });
         web.chat.postEphemeral(response).catch(console.error);
         res.send();
         break;

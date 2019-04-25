@@ -4,7 +4,6 @@ const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
 
 const { email: { SERVICE } } = require('../constants');
 
-// Private
 const getTransporter = () => {
   console.log('getTransporter', SERVICE, EMAIL_ADDRESS);
     return nodemailer.createTransport({

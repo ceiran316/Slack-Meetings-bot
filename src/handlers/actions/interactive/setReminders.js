@@ -3,13 +3,9 @@ const _ = require('underscore');
 
 const web = require('../../../webClient');
 
+const Messages = require('../../../messages');
+
 const { Meetings, Reminders } = require('../../../utils');
-
-const reminders = [5,10,15,20,30,60];
-
-const getReminders = () => {
-    return reminders.map(reminder => ({ label: `${reminder} mins`, value: reminder }))
-}
 
 const isMeetingStillValid = async (payload, meetingId) => {
   const { user: { id: user }, channel: { id: channel }, message_ts: ts } = payload;
@@ -20,7 +16,7 @@ const isMeetingStillValid = async (payload, meetingId) => {
     web.chat.postEphemeral({
       user,
       channel,
-      text: `👎 The meeting may have already \`ended\` or been removed`
+      text: `📅 The meeting may have already \`ended\` or been removed 👎`
     });
     return false
   }
@@ -66,6 +62,17 @@ const buttonsTest = async (req, res) => {
   
   
   switch(action.name) {
+    case 'view_all_meetings': {
+        console.log('view_all_meetings', action.value);
+        const data = await Messages.getAllMeetings(action.value);
+        web.chat.postEphemeral({
+            user,
+            channel,
+            ...data
+        }).catch(console.error);
+        res.send();
+      break;
+    }
     case 'set_meeting_reminder': {
       const meeting = await Meetings.get(action.value);
       
@@ -96,7 +103,7 @@ const buttonsTest = async (req, res) => {
                 name: 'reminder_time',
                 placeholder: 'Choose Reminder Time',
                 type: 'select',
-                options: getReminders(),
+                options: Reminders.getReminderValues(),
             }]
           } 
       });

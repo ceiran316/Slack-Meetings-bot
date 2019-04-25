@@ -27,6 +27,7 @@ const interactiveMessage = (req, res) => {
             readButtons(req, res);
             break;
         }
+        case 'list_meetings':
         case (callback_id.match(/^invite_others/) || {}).input:
         case 'meeting_accept_buttons': {
             meetingButtons(req, res);

@@ -13,13 +13,13 @@ const store = require('../store')('meetings');
 
 const Meetings = {
   getClosestStartTime: () => {
-    const time = 1000 * 60 * 30;
+    const time = 1000 * 60 * 60;
     const date = new Date();
     const rounded = new Date(date.getTime() + time - (date.getTime() % time))
     return moment(rounded).add(1, 'hour').format('HH:mm');
   },
   createEvent: meeting => {
-    const { id: uid, name: title, location, description, year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
+    const { id: uid, name: title = 'Meeting Invitationholmes', location, description = 'Meeting Invite', year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
     console.log('createEvent', organizer);
     const { err, value } = ics.createEvent({
         uid,
@@ -73,8 +73,11 @@ const Meetings = {
         decline: []
     };
     
+    const order = moment(`${meeting.year}-${meeting.month}-${meeting.day} ${meeting.time.hour}:${meeting.time.minutes}`).valueOf();
+
     const data =  {
       ...meeting,
+      order,
       event: Meetings.createEvent(meeting),
       template: Meetings.createTemplate(userId, meeting)
     };
@@ -205,8 +208,6 @@ const Meetings = {
   hasStarted: async (meetingId) => {
     const meeting = await Meetings.get(meetingId);
     const { day, month, year, time: { hour, minutes }, duration: { minutes: durationMinutes } } = meeting;
-    console.log(moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).format('dddd, MMMM Do YYYY, HH:mm'));
-    console.log(moment().add(1, 'hour').format('dddd, MMMM Do YYYY, HH:mm'));
     return moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).isBefore(moment().add(1, 'hour'));
   },
   hasEnded: async (meetingId) => {
@@ -229,21 +230,21 @@ const Meetings = {
     console.log('removeParticipant', meetingId, userId);
     const meeting = await store.get(meetingId);
     meeting.participants = _.without(meeting.participants, userId);
-    console.log('removeParticipant meeting', meeting);
+    meeting.invites = _.without(meeting.invites, userId);
     await store.set(meetingId, meeting);
   },
   
   sendMeetingInvite: async (meetingId, userId) => {
       //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
     const meeting = await store.get(meetingId);
-    const { email } = await Users.getKeys(userId, 'email');
+    const { real_name: displayName, email } = await Users.getUser(userId);
     console.log('sendMeetingInvite meeting', userId, email, meeting);
 
     if(email && meeting) {
       Email.send({
         to: [email], // list of receivers
         subject: `Meeting Invite: ${meeting.name}`, // Subject line
-        html: `<p>${meeting.description}</p>`,
+        html: `<b>${displayName}</b> has sent you a Meeting Invite</p> <i>(via Slack)</i>`,
         icalEvent: {
           filename: 'event.ics',
           method: 'request',
@@ -262,19 +263,24 @@ const Meetings = {
     return false;
   },
   get: async meetingId => {
+    console.log('get meetingId', meetingId);
     const meeting = await store.get(meetingId);
+    console.log('get meeting', meeting);
     return meeting;
   },
   getAll: async user => {
     const allMeetings = await store.getAll();
     const userMeetings = allMeetings.filter(({ participants }) => _.contains(participants, user));
-    const meetings = await Promise.all(_.filter(userMeetings, async ({ id }) => {
+    console.log('userMeetings', userMeetings);
+    const meetings = await Promise.all(userMeetings.filter(async ({ id }) => {
       const hasEnded = await Meetings.hasEnded(id);
       const hasStarted = await Meetings.hasStarted(id);
+      console.log('hasEnded', hasEnded);
+      console.log('hasStarted', hasStarted);
       if (hasEnded) {
         await Meetings.remove(id);
       }
-      return (hasStarted || hasEnded);
+      return !hasEnded;
     }));
     console.log('USER MEERTINGS', meetings);
     return meetings;
