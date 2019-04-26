@@ -92,6 +92,11 @@ const buttonsTest = async (req, res) => {
                     style: 'primary',
                     text: 'Set Reminder',
                     type: 'button'                      
+                }, {
+                  name: 'view_all_meetings',
+                  value: user,
+                  text: 'View All Meetings',
+                  type: 'button'
                 }]
             }]
           }).catch(console.error);
@@ -120,6 +125,11 @@ const buttonsTest = async (req, res) => {
                     style: 'primary',
                     text: 'Set Reminders',
                     type: 'button'                      
+                }, {
+                  name: 'view_all_meetings',
+                  value: user,
+                  text: 'View All Meetings',
+                  type: 'button'
                 }]
             }]
           }).catch(console.error);
