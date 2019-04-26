@@ -105,6 +105,12 @@ const blockActions = async (req, res) => {
             }]
           }]
         });
+        web.chat.postMessage({ 
+          channel,
+          user,
+          response_type: 'in_channel',
+          text: `HEADS UP!! ${msg} has been \`deleted\`. 👋`
+        });
       }
       res.send();
       break;

@@ -235,7 +235,6 @@ const Meetings = {
   },
   
   sendMeetingInvite: async (meetingId, userId) => {
-      //TODO: This should only be done on the accept button, only here for testing/ as we dont save the meeting Id to DB yet.
     const meeting = await store.get(meetingId);
     const { real_name: displayName, email } = await Users.getUser(userId);
     console.log('sendMeetingInvite meeting', userId, email, meeting);
