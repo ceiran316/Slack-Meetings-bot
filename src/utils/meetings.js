@@ -2,14 +2,13 @@ const uuidv1 = require('uuid/v1');
 const ics = require('ics');
 const _ = require('underscore');
 const moment = require('moment');
-
 const Email = require('./email');
 const Users = require('./users');
+const store = require('../store')('meetings');
 
-const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 const meetingsStore = {};
-const store = require('../store')('meetings');
 
 const Meetings = {
   getClosestStartTime: () => {
@@ -22,13 +21,13 @@ const Meetings = {
     const { id: uid, name: title = 'Meeting Invitationholmes', location, description = 'Meeting Invite', year, day, month, time: { hour, minutes }, duration, organizer } = meeting;
     console.log('createEvent', organizer);
     const { err, value } = ics.createEvent({
-        uid,
-        title,
-        location,
-        description,
-        start: [year, month, day, hour-1, parseInt(minutes)],
-        duration,
-        organizer
+      uid,
+      title,
+      location,
+      description,
+      start: [year, month, day, hour - 1, parseInt(minutes)],
+      duration,
+      organizer
     });
     if (err) {
       console.log('ERROR Meetings createEvent', err);
@@ -36,7 +35,7 @@ const Meetings = {
     console.log('Meetings createEvent', value);
     return value;
   },
-  
+
   createObject: async (userId, details, organizer) => {
     const {
       name,
@@ -48,34 +47,34 @@ const Meetings = {
       start: [hourF = 0, hourL = 0, semi = ':', minuteF = 0, minuteL = 0],
       year = (new Date().getUTCFullYear()),
     } = details;
-    
+
     const monthName = Meetings.getMonthName(month);
 
     const meeting = {
-        id: uuidv1(),
-        name,
-        location,
-        day: Meetings.getDay(day),
-        ordinal: Meetings.getOrdinal(day),
-        monthName,
-        month: Meetings.getMonth(monthName),
-        year: parseInt(year, 10),
-        time: {
-          hour: parseInt(`${hourF}${hourL}`, 10),
-          minutes: `${minuteF}${minuteL}`,
-        },
-        organizer,
-        host: userId,
-        duration: { minutes: parseInt(duration, 10) },
-        description,
-        participants: [userId],
-        invites: [userId],
-        decline: []
+      id: uuidv1(),
+      name,
+      location,
+      day: Meetings.getDay(day),
+      ordinal: Meetings.getOrdinal(day),
+      monthName,
+      month: Meetings.getMonth(monthName),
+      year: parseInt(year, 10),
+      time: {
+        hour: parseInt(`${hourF}${hourL}`, 10),
+        minutes: `${minuteF}${minuteL}`,
+      },
+      organizer,
+      host: userId,
+      duration: { minutes: parseInt(duration, 10) },
+      description,
+      participants: [userId],
+      invites: [userId],
+      decline: []
     };
-    
+
     const order = moment(`${meeting.year}-${meeting.month}-${meeting.day} ${meeting.time.hour}:${meeting.time.minutes}`).valueOf();
 
-    const data =  {
+    const data = {
       ...meeting,
       order,
       event: Meetings.createEvent(meeting),
@@ -83,54 +82,54 @@ const Meetings = {
     };
 
     await store.set(meeting.id, data);
-    
+
     return data;
   },
-  
+
   getMonth: month => (months.indexOf(month) + 1),
-  
+
   getMonthName: val => {
     let monthAlpha;
     let monthNum;
-      months.forEach(month => {
-         if (/[0-9]/.test(val)) {
-          monthAlpha = months[val - 1];
-         } else if (month.toLowerCase().startsWith(val.toLowerCase())) {
-          monthAlpha = month;
-         }
-     });
-     return (monthAlpha || 'Invalid Month');
+    months.forEach(month => {
+      if (/[0-9]/.test(val)) {
+        monthAlpha = months[val - 1];
+      } else if (month.toLowerCase().startsWith(val.toLowerCase())) {
+        monthAlpha = month;
+      }
+    });
+    return (monthAlpha || 'Invalid Month');
   },
-  
+
   getDay: day => parseInt((day[0] == 0) ? day[1] : day, 10),
-  
+
   getOrdinal: dayStr => {
     const day = parseInt(dayStr, 10);
     let ordInd;
     if (day > 3 && day < 21) {
-        ordInd ='th';
-        return ordInd;
+      ordInd = 'th';
+      return ordInd;
     }
-      switch (day % 10) {
-          case 1:  {
-            ordInd ='st'; 
-            return ordInd;
-          }
-          case 2:  {
-            ordInd ='nd'; 
-            return ordInd;
-          }
-          case 3:  {
-            ordInd ='rd'; 
-            return ordInd;
-          }
-          default: {
-            ordInd ='th'; 
-            return ordInd;
-          }
+    switch (day % 10) {
+      case 1: {
+        ordInd = 'st';
+        return ordInd;
       }
+      case 2: {
+        ordInd = 'nd';
+        return ordInd;
+      }
+      case 3: {
+        ordInd = 'rd';
+        return ordInd;
+      }
+      default: {
+        ordInd = 'th';
+        return ordInd;
+      }
+    }
   },
-  
+
   createTemplate: (user, meeting) => {
     const {
       id: meetingId,
@@ -148,11 +147,11 @@ const Meetings = {
       duration: { minutes: durationMinutes },
       description
     } = meeting;
-        
+
     console.log('createTemplate meeting', meeting);
-        
+
     const startFriendlyTime = moment(`${year}-${month}-${day} ${hour}:${parseInt(minutes, 10)}`).format('dddd, MMMM Do YYYY, HH:mm');
-    
+
     const fields = [{
       title: `📅 ${startFriendlyTime}`,
       short: false
@@ -163,14 +162,14 @@ const Meetings = {
       title: `🕐 ${durationMinutes} minutes`,
       short: false
     }];
-    
-    if(!_.isEmpty(description)) {
+
+    if (!_.isEmpty(description)) {
       fields.push({
         title: `📝 ${description}`,
         short: false
       });
     }
-    
+
     const template = {
       attachments: [{
         pretext: `<@${user}> has created a Meeting Event`,
@@ -183,22 +182,22 @@ const Meetings = {
         footer_icon: `https://calendar.google.com/googlecalendar/images/favicon_v2014_${day}.ico`,
         footer: 'Add to Calendar',
         actions: [{
-            name: 'accept_meeting',
-            value: `${meetingId}`,
-            style: 'primary',
-            text: 'Accept',
-            type: 'button'                      
+          name: 'accept_meeting',
+          value: `${meetingId}`,
+          style: 'primary',
+          text: 'Accept',
+          type: 'button'
         }, {
-            name: 'decline_meeting',
-            value: `${meetingId}`,
-            text: 'Decline',
-            type: 'button',
-            style: 'danger',
+          name: 'decline_meeting',
+          value: `${meetingId}`,
+          text: 'Decline',
+          type: 'button',
+          style: 'danger',
         }, {
-            name: 'invite_to_meeting',
-            value: `${meetingId}`,
-            text: 'Invite Others',
-            type: 'button'
+          name: 'invite_to_meeting',
+          value: `${meetingId}`,
+          text: 'Invite Others',
+          type: 'button'
         }]
       }]
     };
@@ -233,13 +232,12 @@ const Meetings = {
     meeting.invites = _.without(meeting.invites, userId);
     await store.set(meetingId, meeting);
   },
-  
   sendMeetingInvite: async (meetingId, userId) => {
     const meeting = await store.get(meetingId);
     const { real_name: displayName, email } = await Users.getUser(userId);
     console.log('sendMeetingInvite meeting', userId, email, meeting);
 
-    if(email && meeting) {
+    if (email && meeting) {
       Email.send({
         to: [email], // list of receivers
         subject: `Meeting Invite: ${meeting.name}`, // Subject line
@@ -276,6 +274,7 @@ const Meetings = {
       const hasStarted = await Meetings.hasStarted(id);
       console.log('hasEnded', hasEnded);
       console.log('hasStarted', hasStarted);
+      
       if (hasEnded) {
         await Meetings.remove(id);
       }

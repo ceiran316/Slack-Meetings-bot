@@ -3,10 +3,10 @@ const SLACK_API = `${SLACK}/api`;
 
 const constants = {
     bot: {
-      CHANNEL: 'DE4K71DJ6'
+        CHANNEL: 'DE4K71DJ6'
     },
     email: {
-      SERVICE: 'gmail'
+        SERVICE: 'gmail'
     },
     db: {
         NAME: 'meetings',

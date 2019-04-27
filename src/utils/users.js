@@ -1,8 +1,8 @@
 const _ = require('underscore');
 const web = require('../webClient');
+const store = require('../store')('users');
 
 const usersStore = {};
-const store = require('../store')('users');
 
 const Users = {
   has: async userId => {
@@ -12,8 +12,9 @@ const Users = {
   getUser: async userId => {
     let user = await store.get(userId);
     console.log('getUser user', user);
-    if(!user) {
-      const { profile } = await web.users.profile.get({ user : userId});
+    
+    if (!user) {
+      const { profile } = await web.users.profile.get({ user: userId });
       user = { ...profile, userId, name: profile.real_name };
       await store.set(userId, user);
     }

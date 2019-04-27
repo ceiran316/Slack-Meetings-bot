@@ -4,7 +4,6 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const { createEventAdapter } = require('@slack/events-api');
-
 const { authRedirectHandler, oAuthRedirectHandler } = require('./src/auth');
 const { errorEvent, linkEvent, messageEvent } = require('./src/events');
 const { actionsHandler, optionsHandler, commandsHandler } = require('./src/handlers');
@@ -13,7 +12,6 @@ const { verifySignatureMiddleware } = require('./src/middleware');
 const { PORT, SIGNING_SECRET } = process.env;
 
 const slackEvents = createEventAdapter(SIGNING_SECRET, { includeBody: true });
-
 console.log('SIGNING_SECRET', SIGNING_SECRET);
 
 const app = express();
@@ -40,7 +38,5 @@ app.post('/actions', actionsHandler);
 app.post('/commands', commandsHandler);
 
 app.post('/options', optionsHandler);
-
-// Slack Incoming Events
 
 slackEvents.on('error', errorEvent);

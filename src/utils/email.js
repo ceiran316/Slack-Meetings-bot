@@ -1,11 +1,10 @@
 const nodemailer = require('nodemailer');
+const { email: { SERVICE } } = require('../constants');
 
 const { EMAIL_ADDRESS, EMAIL_PASSWORD } = process.env;
 
-const { email: { SERVICE } } = require('../constants');
-
 const getTransporter = () => {
-  console.log('getTransporter', SERVICE, EMAIL_ADDRESS);
+    console.log('getTransporter', SERVICE, EMAIL_ADDRESS);
     return nodemailer.createTransport({
         service: SERVICE,
         auth: {
@@ -17,7 +16,7 @@ const getTransporter = () => {
 
 const Email = {
     send: details => {
-        const { to: [to, ...bcc] = [], subject = '', html = '', ...rest} = details;
+        const { to: [to, ...bcc] = [], subject = '', html = '', ...rest } = details;
         return getTransporter().sendMail({
             from: EMAIL_ADDRESS,
             to,

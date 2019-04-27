@@ -8,7 +8,7 @@ const options = (req, res) => {
     const payload = JSON.parse(body.payload);
     const { type } = payload;
     console.log('OPTIONS type', type);
-    switch(type) {
+    switch (type) {
         case 'dialog_suggestion': {
             return dialogSuggestion(req, res);
         }

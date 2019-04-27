@@ -1,5 +1,4 @@
 const queryStrings = require('query-string');
-
 const constants = require('../constants');
 
 const oAuth = (req, res) => {

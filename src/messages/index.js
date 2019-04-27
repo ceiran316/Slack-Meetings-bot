@@ -10,6 +10,7 @@ const { reduce } = require('awaity');
 const Messages = {
   getAllMeetings: async user => {
     const allMeetings = await Meetings.getAll(user);
+    
     if (_.isEmpty(allMeetings)) {
       return {
         attachments: [{
@@ -18,11 +19,11 @@ const Messages = {
           attachment_type: 'default',
           callback_id: 'create_buttons',
           actions: [{
-              name: 'decision',
-              value: 'yes_create_meeting',
-              style: 'primary',
-              text: 'Create Meeting',
-              type: 'button'
+            name: 'decision',
+            value: 'yes_create_meeting',
+            style: 'primary',
+            text: 'Create Meeting',
+            type: 'button'
           }]
         }]
       };
@@ -31,7 +32,7 @@ const Messages = {
     return {
       mrkdwn: true,
       as_user: false,
-      blocks: [	{
+      blocks: [{
         "type": "section",
         "text": {
           "type": "mrkdwn",
@@ -50,11 +51,11 @@ const Messages = {
         attachment_type: 'default',
         callback_id: 'create_buttons',
         actions: [{
-            name: 'decision',
-            value: 'yes_create_meeting',
-            style: 'primary',
-            text: 'Create Meeting',
-            type: 'button'
+          name: 'decision',
+          value: 'yes_create_meeting',
+          style: 'primary',
+          text: 'Create Meeting',
+          type: 'button'
         }]
       }]
     }
@@ -86,7 +87,7 @@ const Messages = {
       const descriptionText = description ? `📝 ${description}` : '';
       const hasStarted = await Meetings.hasStarted(meeting.id);
       const startedAgo = await Messages.getStartedAgo(meeting.id);
-      const started = hasStarted ? ` - started ${startedAgo}`: '';
+      const started = hasStarted ? ` - started ${startedAgo}` : '';
 
       return [...block, {
         type: 'divider'
@@ -99,21 +100,21 @@ const Messages = {
         accessory: {
           type: 'overflow',
           options: [{
-              text: {
-                type: 'plain_text',
-                text: hasStarted ? 'View Invite' : 'Set Reminder',
-                emoji: true
-              },
-              value: `${id}`
+            text: {
+              type: 'plain_text',
+              text: hasStarted ? 'View Invite' : 'Set Reminder',
+              emoji: true
             },
-            {
-              text: {
-                type: 'plain_text',
-                text: (user === host) ? 'Delete' : 'Leave',
-                emoji: true
-              },
-              value: `${id}`
-            }
+            value: `${id}`
+          },
+          {
+            text: {
+              type: 'plain_text',
+              text: (user === host) ? 'Delete' : 'Leave',
+              emoji: true
+            },
+            value: `${id}`
+          }
           ],
           action_id: "meeting_menu_options"
         }
